@@ -1,0 +1,12 @@
+Source: ros-melodic-heifu-description
+Section: misc
+Priority: optional
+Maintainer: Ricardo Sacoto Martins <rmartins@pdmfc.com>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-roslaunch
+Homepage: https://www.pdmfc.com/
+Standards-Version: 3.9.2
+
+Package: ros-melodic-heifu-description
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-urdf, ros-melodic-xacro
+Description: SDF robot description for HEIFU
