@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>heifu_tools</name>
-  <version>0.7.3</version>
+  <version>0.7.2</version>
   <description>Heifu Tools</description>
 
   <maintainer email="joao.m.carvalho@pdmfc.com">João Pedro Carvalho</maintainer>
 
-  <license>BSD</license>
+  <license>TODO</license>
 
   <author email="joao.m.carvalho@pdmfc.com">João Pedro Carvalho</author>
 
