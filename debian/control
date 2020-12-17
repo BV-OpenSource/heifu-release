@@ -1,0 +1,12 @@
+Source: ros-melodic-heifu-diagnostic
+Section: misc
+Priority: optional
+Maintainer: Filipe Almeida <falmeida@pdmfc.com>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-mavros, ros-melodic-roscpp, ros-melodic-roslib, ros-melodic-std-msgs
+Homepage: https://gitlab.pdmfc.com/drones/heifu/tree/master/heifu_diagnostic
+Standards-Version: 3.9.2
+
+Package: ros-melodic-heifu-diagnostic
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-mavros, ros-melodic-roscpp, ros-melodic-roslib, ros-melodic-std-msgs
+Description: Heifu diagnostic to get GPS status
