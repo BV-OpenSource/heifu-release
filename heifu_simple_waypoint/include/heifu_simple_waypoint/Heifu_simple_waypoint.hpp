@@ -13,7 +13,6 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <tf/transform_listener.h>
 #include <math.h>
-#include <ros_utils/Console.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
 #include <geographic_msgs/GeoPose.h>
