@@ -19,9 +19,15 @@
     <arg name="argSecredas"         default="false"/>
     <arg name="argPlanners"         default="false"/>
     <arg name="argGimbal"           default="true"/>
+    <arg name="gazebo"              default="true"/>
 
     <!-- Launch gazebo -->
-    <include file="$(find heifu_description)/launch/gazebo.launch" if="$(arg argSim)">
+    <include file="$(find heifu_description)/launch/gazebo.launch" if="$(arg gazebo)">
+    </include>
+
+    <!-- Launch battery -->
+    <include file="$(find heifu_battery)/launch/heifu_battery.launch" >
+        <arg name="argNamespace" 	    value="$(arg argNamespace)"/>
     </include>
 
      <!-- Launch mavros node -->
@@ -33,6 +39,9 @@
         <arg name="argNodeRate"         value="$(arg argNodeRate)"/>
 	    <arg name="argNamespace" 	    value="$(arg argNamespace)"/>
         <arg name="argSimulation" 	    value="$(arg argSim)"/>
+        <arg name="xi" 	                value="$(arg xi)"/>
+        <arg name="yi" 	                value="$(arg yi)"/>
+        <arg name="argID" 	            value="$(arg argID)"/>
     </include>
 
     <!-- Launch controller input mux -->
@@ -67,6 +76,12 @@
     </include>
 
     <!-- Initialize Global Coordinate converter -->
+    <include file="$(find gnss_utils)/launch/LLA2ENU_MavROS.launch" unless="$(arg argPlanners)">
+        <arg name="argNamespace"    value="$(arg argNamespace)"/>
+        <arg name="argID"           value="$(arg argID)"/>
+        <arg name="topic"        	value="/$(arg argNamespace)/setpoint_position"/>
+    </include>
+
     <include file="$(find gnss_utils)/launch/LLA2ENU_MavROS.launch" if="$(arg argPlanners)">
         <arg name="argNamespace"    value="$(arg argNamespace)"/>
         <arg name="argID"           value="$(arg argID)"/>

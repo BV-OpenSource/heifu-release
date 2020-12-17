@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>heifu_description</name>
-  <version>0.7.1</version>
+  <version>0.7.3</version>
   <description>SDF robot description for HEIFU</description>
 
   <maintainer email="rmartins@pdmfc.com">Ricardo Sacoto Martins</maintainer>

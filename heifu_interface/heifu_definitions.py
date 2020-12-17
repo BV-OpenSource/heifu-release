@@ -22,10 +22,10 @@ def TwistCv(msg):
 
 def WaypointCv(msg):
     conversion = Waypoint()
-    conversion.frame = int(msg['frame'])
-    conversion.command = int(msg['command']['code'])
-    conversion.is_current = bool(msg['isCurrent'])
-    conversion.autocontinue = bool(msg['autoContinue'])
+    conversion.frame = 3
+    conversion.command = int(msg['command'])
+    conversion.is_current = False
+    conversion.autocontinue = False
     conversion.param1 = float(msg['param1'])
     conversion.param2 = float(msg['param2'])
     conversion.param3 = float(msg['param3'])
