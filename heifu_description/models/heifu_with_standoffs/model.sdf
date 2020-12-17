@@ -94,6 +94,12 @@
       </visual>      
     </link>
 
+    <joint name='camera_to_base_link' type='fixed'>
+      <pose>0 0 0 -1.57 1.57 0</pose>
+      <child>camera_link</child>
+      <parent>base_link</parent>
+    </joint>
+
     <link name='landing_gear_2'>
       <pose>0 -0.15 -0.15 0 0 -3.1415</pose>
       <inertial>
@@ -135,87 +141,6 @@
 
     <joint name='base_to_lg_2' type='fixed'>
       <child>landing_gear_2</child>
-      <parent>base_link</parent>
-    </joint>
-
-<!-- CameraLink -->
-    <link name="camera_link">
-    <pose>0.17 0 -0.05 0 0 0</pose>
-      <inertial>
-        <pose>0 0 0 0 -0 0</pose>
-        <mass>0.01</mass>
-        <inertia>
-          <ixx>4.15e-6</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>2.407e-6</iyy>
-          <iyz>0</iyz>
-          <izz>2.407e-6</izz>
-        </inertia>
-      </inertial>
-      <visual name="visual">
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.005</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <name>Gazebo/DarkGrey</name>
-          </script>
-        </material>
-      </visual>
-      <!-- camera -->
-  
-      <sensor type="depth" name="pointcloud_sensor">
-          <always_on>1</always_on>
-          <visualize>true</visualize>             
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>  
-            <image>
-                <width>640</width>
-                <height>480</height>
-                <format>R8G8B8</format>
-            </image>
-            <depth_camera>
-
-            </depth_camera>
-            <clip>
-                <near>0.1</near>
-                <far>100</far>
-            </clip>
-          </camera>
-          <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
-            <robotNamespace></robotNamespace>
-            <alwaysOn>true</alwaysOn>
-            <updateRate>10.0</updateRate>
-            <cameraName>pointcloud</cameraName>
-            <frameName>camera_link</frameName>                   
-            <imageTopicName>color/image_raw</imageTopicName>
-            <depthImageTopicName>depth/image_raw</depthImageTopicName>
-            <pointCloudTopicName>depth/color/points</pointCloudTopicName>
-            <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
-            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
-            <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
-            <pointCloudCutoff>1.0</pointCloudCutoff>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-            <CxPrime>0.0</CxPrime>
-            <Cx>0.0</Cx>
-            <Cy>0.0</Cy>
-            <focalLength>0.0</focalLength>
-          </plugin>
-        </sensor>
-    </link>
-     
-    
-    <joint name='camera_to_base_link' type='fixed'>
-      <pose>0 0 0 -1.57 1.57 0</pose>
-      <child>camera_link</child>
       <parent>base_link</parent>
     </joint>
 

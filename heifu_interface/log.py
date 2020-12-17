@@ -8,6 +8,7 @@ import sys
 import datetime
 import os
 from os.path import expanduser
+from time import sleep
 
 HEADER = '\033[95m'
 OKBLUE = '\033[94m'
@@ -26,6 +27,7 @@ class HEIFULogger:
         self.show_debug = False
         self.filePythonName = filePythonName
         self.path = None
+        self.ticketToWrite = True
         if self.writeFile:
             self.date = datetime.datetime.now()
             homeDir = expanduser("~")
@@ -36,6 +38,11 @@ class HEIFULogger:
                 os.mkdir(folderPath)
 
     def log(self, startc, msg, level_name):
+        while self.ticketToWrite == False:
+            sleep(0.01)
+            continue
+        self.ticketToWrite = False
+        
         self.date = datetime.datetime.now()
         level = ('[' + level_name + ']').ljust(9)
         print('%s %s%s %s%s' % (self.date.strftime("%Y-%m-%d %H:%M:%S"), startc, level, msg, ENDC))
@@ -44,6 +51,8 @@ class HEIFULogger:
             self.f.write('%s %s %s\n' % (self.date.strftime('%Y-%m-%d %H:%M:%S'), level, msg))
             self.f.close()
         sys.stdout.flush()
+        
+        self.ticketToWrite = True
 
     def info(self, msg):
         self.log(DEFAULT, msg, 'INFO')
