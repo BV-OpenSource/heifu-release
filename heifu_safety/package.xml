@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package>
   <name>heifu_safety</name>
-  <version>0.7.1</version>
+  <version>0.7.3</version>
   <description>This package enables an allowable safety zone to control the drone with a joystick.</description>
 
   <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
 
   <license>BSD</license>
-  <url type="repository">https://gitlab.pdmfc.com/drones/heifu</url>
+  <url type="repository">https://gitlab.pdmfc.com/drones/ros1/heifu/-/tree/master/heifu_safety</url>
   <author email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</author>
 
   <buildtool_depend>catkin</buildtool_depend>

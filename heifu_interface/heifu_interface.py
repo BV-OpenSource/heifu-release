@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import std_msgs
 from std_msgs.msg import Bool
@@ -8,7 +8,7 @@ import geographic_msgs.msg
 import mavros_msgs
 import socketio
 import json
-from mavros_msgs.srv import WaypointPull, WaypointPush, WaypointClear, CommandLong, CommandBool
+from mavros_msgs.srv import WaypointPull, WaypointPush, WaypointClear, CommandLong, CommandBool, SetMode
 from mavros_msgs.msg import WaypointList, Waypoint, WaypointReached, MagnetometerReporter
 import os
 from base64 import b64decode
@@ -28,8 +28,35 @@ from os import path
 from os import listdir
 import time
 import log
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
+from threading import Thread
+from time import sleep
+import nfz_stop
+import formulas
+from tf.transformations import euler_from_quaternion
+import math
+from threading import Timer
+from sensors_node.msg import rfid_humtemp
+import sys
+
+GIMBAL_MIN_DELAY = 0.1 # 1 / GIMBAL_HZ
+
+global gimbal_flag
+gimbal_flag = True
+
 
 logger = log.HEIFULogger(os.path.basename(__file__), writeFile=True)
+if (len(sys.argv)>1):
+    ROSNAME = sys.argv[1]
+    configname = '-' + ROSNAME
+else:
+    ROSNAME = 'heifu'
+    configname = ''
+
+class UAVposition:
+    latitude = None#0 #39.1212552265913
+    longitude = None #0 #-9.379234313964846
 
 HEIFU_INFO = logger.info
 HEIFU_WARNING = logger.warning
@@ -37,42 +64,37 @@ HEIFU_ERROR = logger.error
 HEIFU_EXCEPTION = logger.exception
 HEIFU_DEBUG = logger.debug
 
-# Select the endpoint target: preprod, qa, local, or graca
-endpoint = 'local'
+UAVposition = UAVposition()
+location_array = []
 
-# Cameras available: PC: default, RealSense: realsense, RaspyCam: raspy, Insta360 Pro: insta360
-camType = "insta360"
+# Select the endpoint target: prod, preprod, qa, local, or graca
+endpoint = 'qa'
+
+# Cameras available: PC: default, RealSense: realsense, RaspyCam: raspy, Insta360 Pro: insta360, Stabilize: stab
+camType = 'raspy'
 
 # To enable jetson streaming pipelines set to True
 jetsonON = False
 # TODO Use gstreamer monitor to discover video capture devices and their paths
-devId = 2  # Id for realsense
+devId = 6  # Id for realsense
 
-# Preprod
-# URL = 'https://beyond-skyline-backend.preprod.pdmfc.com'
-# URLWS = 'https://beyond-skyline-backend.preprod.pdmfc.com'
-# QA
-# URL = 'https://beyond-skyline-backend.qa.pdmfc.com'
-# URLWS = 'https://beyond-skyline-backend.qa.pdmfc.com'
-# Graca
-# URL = 'http://85.246.61.135:3000'
-# URLWS = 'http://85.246.61.135:3000'
+#Enable No Fly Zones
+enableNFZ = False
 
-# Local
-# URL = 'http://127.0.0.1:3000'
-# URLWS = 'http://127.0.0.1:3000'
-
+#Endpoints
+apiVersion = '/api/v1'
 backendList = {'preprod': 'https://beyond-skyline-backend.preprod.pdmfc.com',
-               'qa': 'https://beyond-skyline-backend.qa.pdmfc.com', \
+               'qa': 'https://beyond-skyline-backend.qa.pdmfc.com',
+               'prod': 'https://beyond-skyline.com',
                'local': 'http://127.0.0.1:3000', 'graca': 'http://85.246.61.135:3000'}
-janusList = {'preprod': 'janus.preprod.pdmfc.com', 'qa': 'janus.qa.pdmfc.com', 'local': '127.0.0.1',
-             'graca': '85.246.61.135'}
+janusList = {'preprod': 'janus.preprod.pdmfc.com', 'qa': 'janus.qa.pdmfc.com', 'local': '192.168.1.158',
+             'graca': '85.246.61.135', 'prod': '213.63.138.90',}
 
-URL = backendList[endpoint]
-URLWS = backendList[endpoint]
+URL = backendList[endpoint] + apiVersion
+URLWS = backendList[endpoint] + apiVersion
 janusIP = janusList[endpoint]
 
-insta360IP = '192.168.1.162'
+insta360IP = '192.168.1.100'
 # ip graca: 85.243.249.239
 UPLOADURL = URL + '/drone/uploadVideo'
 DOWNLOADAUDIOURL = URL + '/drone/downloadAudio'
@@ -91,9 +113,26 @@ global totalWaypointsMission
 global lastBatteryValue
 global waypointsCode
 global waypointCounter
+global noTakeoff
+global wpList
+noTakeoff = False
+global wpCommandList
 # Initiated is used in order to only subscribe to Rostopics Once
 global initiated
+isMissionStarted = False
+wpCommandList = []
 initiated = False
+global thresholdMinAreas
+global thresholdMinDistances
+thresholdMinAreas = []
+thresholdMinDistances = []
+waypointCounter = 0
+totalWaypointsMission = 0
+global areaIndex
+global setupNFZdone
+setupNFZdone = False
+waypointCounter = 0
+totalWaypointsMission = 0
 
 minimumVoltage = 20.4
 maximumVoltage = 25.2
@@ -105,8 +144,7 @@ intercept = -slope * minimumVoltage
 def getConfig():
     try:
         home_dir = expanduser("~")
-
-        path = os.path.abspath(os.path.join(home_dir, 'config'))
+        path = os.path.abspath(os.path.join(home_dir, 'config' + configname))
         file = open(path, "r")
         line = file.readline().rstrip()
         namespace = decrypt(line)
@@ -192,10 +230,60 @@ def cbVel(msg):
 
 
 def cbGPS(msg):
-    sio.emit(NAMESPACE + '/m/gp/g', {'a': msg.altitude, 'x': msg.latitude, 'y': msg.longitude})
+    global UAVposition
+    global setupNFZdone
+    if(msg.altitude and msg.latitude and msg.longitude):
+        UAVposition.latitude = msg.latitude
+        UAVposition.longitude = msg.longitude
+        calculateAzimuthAndDistances(UAVposition)
+        if (not setupNFZdone):
+            setupNFZ() 
+        calculateAzimuthAndDistances(UAVposition)
+        sio.emit(NAMESPACE + '/m/gp/g', {'a': msg.altitude, 'x': msg.latitude, 'y': msg.longitude})
 
+def calculatePolygon(takeoffFlag):
+    global thresholdMinAreas
+    global areaIndex
+    if thresholdMinAreas:
+        if takeoffFlag:
+            polygon =  []
+            for area in thresholdMinAreas:
+                listPoints = []
+                for coordinate in area:
+                    listPoints.append(Point(coordinate[1], coordinate[0]))
+                polygon.append(Polygon(listPoints))
+        else:
+            listPoints = [Point(coordinate[1], coordinate[0]) for coordinate in thresholdMinAreas[areaIndex]]
+            polygon = Polygon(listPoints)
+        return polygon    
+
+
+def calculateAzimuthAndDistances(UAVposition):
+    if(thresholdMinAreas):
+        closestCoordinates = nfz_stop.getClosestCoordinateFromArea(UAVposition.latitude, UAVposition.longitude, thresholdMinAreas)
+        closestCoordinate = closestCoordinates[0]
+        secondClosestCoordinate = closestCoordinates[1]
+        global areaIndex
+        areaIndex = closestCoordinates[2]
+        coord = formulas.pnt2line([UAVposition.latitude, UAVposition.longitude, 0], [closestCoordinate[1], closestCoordinate[0], 0], [secondClosestCoordinate[1], secondClosestCoordinate[0], 0])
+        ### distance comes in degrees from pnt2line formula and one degree is 111km therefore distance is 111k meters * degree
+        distance = 111000 * coord[0]
+        if distance < 1000: 
+            sio.emit(NAMESPACE + '/distanceWarning' , distance)
 
 def cbState(msg):
+    global isMissionStarted
+    global manualisON
+    global heifuMode
+    heifuMode = msg.mode
+    if(msg.mode != "AUTO" and msg.mode != "GUIDED"):
+        manualisON = True
+    else:
+        manualisON = False
+    if (msg.armed and msg.mode == "AUTO"):
+        isMissionStarted = True
+    else:
+        isMissionStarted = False
     sio.emit(NAMESPACE + '/m/s', ({'connected': msg.connected, 'armed': msg.armed,
                                    'guided': msg.guided, 'manual_input': msg.manual_input, 'mode': msg.mode,
                                    'system_status': msg.system_status}))
@@ -214,19 +302,8 @@ def cbGpsFix(msg):
 
 
 def cbBattery(msg):
-    global lastBatteryValue
-    if 'lastBatteryValue' in globals():
-        currentVoltage = slope * msg.voltage + intercept
-        # HEIFU_INFO('Last-> ' + str(lastBatteryValue) + ' || Current-> ' + str(currentVoltage))
-        if lastBatteryValue <= currentVoltage:
-            return
-        else:
-            lastBatteryValue = currentVoltage
-            sio.emit(NAMESPACE + '/b', {'p': lastBatteryValue})
-    else:  # enter here when battery is null - first time
-        currentVoltage = slope * msg.voltage + intercept
-        lastBatteryValue = currentVoltage
-        sio.emit(NAMESPACE + '/b', {'p': lastBatteryValue})
+    currentVoltage = slope * msg.voltage + intercept
+    sio.emit(NAMESPACE + '/b', {'p': currentVoltage})
 
 
 def cbSatNum(msg):
@@ -255,96 +332,107 @@ def cbAcclStatus(msg):
 def cbAPMInit(msg):
     sio.emit(NAMESPACE + '/m/apm/s', msg.data)
 
+def cbWaypointList(msg):
+    global totalWaypointsMission
+    global wpCommandList
+    global wpList
+    wpList = WaypointList()
+    wpList = msg
+    wpCommandList = []
+    index = 1
+    totalWaypointsMission = len(wpList.waypoints) - 1
 
 def cbWaypointReached(msg):
     global totalWaypointsMission
     global isMissionStarted
     global waypointsCode
     global waypointCounter
+    global wpCommandList
 
-    if 'totalWaypointsMission' in globals():
-        waypointCounter += 1
+    if isMissionStarted:
+        waypointCounter = msg.wp_seq
         percentage = 100.0 * (float(waypointCounter) / float(totalWaypointsMission))
-
-        sio.emit(NAMESPACE + '/mission/status',
-                 ({'total': totalWaypointsMission, 'reached': waypointCounter, 'percentage': percentage}))
-        HEIFU_INFO('Total-> %s || Reached-> %s || Percentage-> %s' % (
-        str(totalWaypointsMission), str(waypointCounter), str(percentage)))
         if int(percentage) >= int(100):
             HEIFU_INFO('End Mission')
             sio.emit(NAMESPACE + '/mission/end', '')
             isMissionStarted = False
-            if waypointsCode[len(waypointsCode) - 1] == 21:  # Land code
-                pubLandMission.publish()
-            return
-
-        if int(waypointCounter + 1) >= int(totalWaypointsMission):
-            if waypointsCode[waypointCounter] == 21:  # Land code
-                HEIFU_INFO('Will do land now')
-                # Fake land on mission to stop video recording
-                # pubLandMission.publish()
-                sio.emit(NAMESPACE + '/mission/landACK', '')
+        else:
+            sio.emit(NAMESPACE + '/mission/status',
+                     ({'total': totalWaypointsMission, 'reached': waypointCounter, 'percentage': percentage}))
+            HEIFU_INFO('Total-> %s || Reached-> %s || Percentage-> %s' % (
+            str(totalWaypointsMission), str(waypointCounter), str(percentage))) 
 
 
 def cbFilename(msg):
     HEIFU_INFO(msg)
     sio.emit(NAMESPACE + '/filename', msg.data)
 
+def cbSensorRfid(msg):
+    sensorData = rfid_humtemp()
+    sensorData = msg
+    HEIFU_INFO(sensorData.humidity)
+    sio.emit(NAMESPACE + '/mission/sensors/rfid', {'tagId': sensorData.tag_id, 'value': sensorData.temperature, 'humidity': sensorData.humidity})
+    pubSensorStop.publish()
+
 
 # Publishers
 pubWarning = rospy.Publisher('warning', std_msgs.msg.String, queue_size=10)
-pubCmd = rospy.Publisher('heifu/frontend/cmd', geometry_msgs.msg.Twist, queue_size=10)
-pubLand = rospy.Publisher('heifu/land', std_msgs.msg.Empty, queue_size=10)
-pubTakeoff = rospy.Publisher('heifu/takeoff', std_msgs.msg.Empty, queue_size=10)
-pubAuto = rospy.Publisher('heifu/mode_auto', std_msgs.msg.Empty, queue_size=10)
-pubRtl = rospy.Publisher('heifu/rtl', std_msgs.msg.Empty, queue_size=10)
-pubStopMission = rospy.Publisher('heifu/mission/stop', std_msgs.msg.Empty, queue_size=10)
-pubSetPoint = rospy.Publisher('heifu/global_setpoint_converter', geographic_msgs.msg.GeoPose, queue_size=10)
-pubCmdGimbal = rospy.Publisher('heifu/frontend/gimbal', geometry_msgs.msg.Twist, queue_size=10)
-pubLandMission = rospy.Publisher('heifu/mission/land', std_msgs.msg.Empty, queue_size=10)
+pubCmd = rospy.Publisher(ROSNAME + '/frontend/cmd', geometry_msgs.msg.Twist, queue_size=10)
+pubLand = rospy.Publisher(ROSNAME + '/land', std_msgs.msg.Empty, queue_size=10)
+pubTakeoff = rospy.Publisher(ROSNAME + '/takeoff', std_msgs.msg.Empty, queue_size=10)
+pubAuto = rospy.Publisher(ROSNAME + '/mode_auto', std_msgs.msg.Empty, queue_size=10)
+pubRtl = rospy.Publisher(ROSNAME + '/rtl', std_msgs.msg.Empty, queue_size=10)
+pubStopMission = rospy.Publisher(ROSNAME + '/mission/stop', std_msgs.msg.Empty, queue_size=10)
+pubStartMission = rospy.Publisher(ROSNAME + '/mission/start', std_msgs.msg.Empty, queue_size=10)
+pubSetPoint = rospy.Publisher(ROSNAME + '/GNSS_utils/goal_coordinates', geometry_msgs.msg.Pose, queue_size=10)
+pubStartPlanner = rospy.Publisher(ROSNAME + '/planners/start', std_msgs.msg.Empty, queue_size=10)
+pubCmdGimbal = rospy.Publisher(ROSNAME + '/frontend/gimbal', geometry_msgs.msg.Twist, queue_size=10)
+pubLandMission = rospy.Publisher(ROSNAME + '/mission/land', std_msgs.msg.Empty, queue_size=10)
+pubSensorStart = rospy.Publisher(ROSNAME + 'sensors/start', std_msgs.msg.Empty, queue_size=10)
+pubSensorStop = rospy.Publisher(ROSNAME + 'sensors/stop', std_msgs.msg.Empty, queue_size=10)
 
 # Services
-srvCmd = rospy.ServiceProxy('heifu/mavros/cmd/command', mavros_msgs.srv.CommandLong)
-srvCmdAck = rospy.ServiceProxy('heifu/mavros/cmd/command_ack', mavros_msgs.srv.CommandAck)
-gimbal_service = rospy.ServiceProxy('heifu/gimbal/setAxes', setGimbalAxes)
-srvMissionClear = rospy.ServiceProxy('heifu/mavros/mission/clear', mavros_msgs.srv.WaypointClear)
-srvMissionPush = rospy.ServiceProxy('heifu/mavros/mission/push', mavros_msgs.srv.WaypointPush)
-# srvMissionPull = rospy.ServiceProxy('heifu/mavros/mission/pull',mavros_msgs.srv.WaypointPull)
-srvMissionMode = rospy.ServiceProxy('heifu/mavros/set_mode', mavros_msgs.srv.SetMode)
-srvArm = rospy.ServiceProxy('heifu/mavros/cmd/arming', mavros_msgs.srv.CommandBool)
-srvGimbal = rospy.ServiceProxy('heifu/gimbal/setAxes', setGimbalAxes)
+srvCmd = rospy.ServiceProxy(ROSNAME + '/mavros/cmd/command', mavros_msgs.srv.CommandLong)
+srvCmdAck = rospy.ServiceProxy(ROSNAME + '/mavros/cmd/command_ack', mavros_msgs.srv.CommandAck)
+srvMissionClear = rospy.ServiceProxy(ROSNAME + '/mavros/mission/clear', mavros_msgs.srv.WaypointClear)
+srvMissionPush = rospy.ServiceProxy(ROSNAME + '/mavros/mission/push', mavros_msgs.srv.WaypointPush)
+# srvMissionPull = rospy.ServiceProxy(ROSNAME + '/mavros/mission/pull',mavros_msgs.srv.WaypointPull)
+srvSetMode = rospy.ServiceProxy(ROSNAME + '/mavros/set_mode', SetMode)
+srvArm = rospy.ServiceProxy(ROSNAME + '/mavros/cmd/arming', mavros_msgs.srv.CommandBool)
+srvGimbal = rospy.ServiceProxy(ROSNAME + '/gimbal/setAxes', setGimbalAxes)
 
-
+# Subscribers
 def Subscribers():
-    rospy.Subscriber('heifu/disarm', std_msgs.msg.Empty, cbDisarm)
-    rospy.Subscriber('heifu/takeoff', std_msgs.msg.Empty, cbTakeOff)
-    rospy.Subscriber('heifu/diagnostic/takeoff', Bool, cbTakeOffDiagnostic)
-    rospy.Subscriber('heifu/land', std_msgs.msg.Empty, cbLand)
-    rospy.Subscriber('heifu/diagnostic/land', Bool, cbLandDiagnostic)
-    rospy.Subscriber('heifu/mavros/local_position/pose', geometry_msgs.msg.PoseStamped, cbPose)
-    rospy.Subscriber('heifu/mavros/local_position/velocity_local', geometry_msgs.msg.TwistStamped, cbVel)
-    rospy.Subscriber('heifu/mavros/global_position/global', sensor_msgs.msg.NavSatFix, cbGPS)
-    rospy.Subscriber('heifu/mavros/state', mavros_msgs.msg.State, cbState)
-    rospy.Subscriber('heifu/camera/compressed', sensor_msgs.msg.CompressedImage, cbCompressedImage)
-    rospy.Subscriber('heifu/c/s', std_msgs.msg.String, cbStatus)
-    rospy.Subscriber('heifu/mavros/battery', sensor_msgs.msg.BatteryState, cbBattery)
-    rospy.Subscriber('heifu/mavros/global_position/raw/satellites', std_msgs.msg.UInt32, cbSatNum)
-    rospy.Subscriber('heifu/g/f/m', std_msgs.msg.Int8, cbGpsFix)
-    rospy.Subscriber('heifu/mavros/MagCalibration/status', std_msgs.msg.UInt8, cbMagStatus)
-    rospy.Subscriber('heifu/mavros/MagCalibration/report', MagnetometerReporter, cbMagReport)
-    rospy.Subscriber('/heifu/mavros/fcuE', std_msgs.msg.String, cbFCUErr)
-    rospy.Subscriber('/heifu/mavros/accl/status', std_msgs.msg.String, cbAcclStatus)
-    rospy.Subscriber('/heifu/mavros/apm/init', std_msgs.msg.Bool, cbAPMInit)
-    rospy.Subscriber('heifu/mavros/mission/reached', WaypointReached, cbWaypointReached)
-    rospy.Subscriber('filename', std_msgs.msg.String, cbFilename)
-
+    rospy.Subscriber(ROSNAME + '/disarm', std_msgs.msg.Empty, cbDisarm)
+    rospy.Subscriber(ROSNAME + '/takeoff', std_msgs.msg.Empty, cbTakeOff)
+    rospy.Subscriber(ROSNAME + '/diagnostic/takeoff', Bool, cbTakeOffDiagnostic)
+    rospy.Subscriber(ROSNAME + '/land', std_msgs.msg.Empty, cbLand)
+    rospy.Subscriber(ROSNAME + '/diagnostic/land', Bool, cbLandDiagnostic)
+    rospy.Subscriber(ROSNAME + '/mavros/local_position/pose', geometry_msgs.msg.PoseStamped, cbPose)
+    rospy.Subscriber(ROSNAME + '/mavros/local_position/velocity_local', geometry_msgs.msg.TwistStamped, cbVel)
+    rospy.Subscriber(ROSNAME + '/mavros/global_position/global', sensor_msgs.msg.NavSatFix, cbGPS)
+    rospy.Subscriber(ROSNAME + '/mavros/state', mavros_msgs.msg.State, cbState)
+    rospy.Subscriber(ROSNAME + '/camera/compressed', sensor_msgs.msg.CompressedImage, cbCompressedImage)
+    rospy.Subscriber(ROSNAME + '/c/s', std_msgs.msg.String, cbStatus)
+    rospy.Subscriber(ROSNAME + '/battery', sensor_msgs.msg.BatteryState, cbBattery)
+    rospy.Subscriber(ROSNAME + '/mavros/global_position/raw/satellites', std_msgs.msg.UInt32, cbSatNum)
+    rospy.Subscriber(ROSNAME + '/g/f/m', std_msgs.msg.Int8, cbGpsFix)
+    rospy.Subscriber(ROSNAME + '/mavros/MagCalibration/status', std_msgs.msg.UInt8, cbMagStatus)
+    rospy.Subscriber(ROSNAME + '/mavros/MagCalibration/report', MagnetometerReporter, cbMagReport)
+    rospy.Subscriber(ROSNAME + '/mavros/fcuE', std_msgs.msg.String, cbFCUErr)
+    rospy.Subscriber(ROSNAME + '/mavros/accl/status', std_msgs.msg.String, cbAcclStatus)
+    rospy.Subscriber(ROSNAME + '/mavros/apm/init', std_msgs.msg.Bool, cbAPMInit)
+    rospy.Subscriber(ROSNAME + '/mavros/mission/reached', WaypointReached, cbWaypointReached)
+    rospy.Subscriber(ROSNAME + '/mavros/mission/waypoints', WaypointList, cbWaypointList)
+    rospy.Subscriber(ROSNAME + 'filename', std_msgs.msg.String, cbFilename)
+    rospy.Subscriber(ROSNAME + 'sensors/data', rfid_humtemp, cbSensorRfid)
 
 # defines on connect event and prints if connection is established
 @sio.event
 def connect():
     HEIFU_INFO('connection established')
     time.sleep(2)
-    loadConfigFiles()
+    # loadConfigFiles() This is not working well
     global initiated
     if initiated == False:
         Subscribers()
@@ -357,8 +445,11 @@ def disconnect():
     global pidProcess
 
     if 'pidProcess' in globals():
-        killCommand = "kill -2 " + str(pidProcess)  # Create the kill interrupt command
-        output = subprocess.call(['bash', '-c', killCommand])  # Run the process to video recorder
+        if camType == 'stab':
+            os.system('bash ' + PROJECTPATH + 'kill_process.sh ' + str(pidProcess))
+        else:
+            killCommand = "kill -2 " + str(pidProcess)  # Create the kill interrupt command
+            output = subprocess.call(['bash', '-c', killCommand])  # Run the process to video recorder
 
     saveConfigFiles()
     HEIFU_INFO('disconnected from server')
@@ -367,6 +458,10 @@ def disconnect():
 # connects to backend
 sio.connect(URLWS + '?source=drone&token=' + TOKEN)
 
+@sio.on(NAMESPACE + '/frontend/sendTriggerSensor')
+def sendTriggerRISESensor(msg):
+    HEIFU_INFO('Trigger sensor')
+    pubSensorStart.publish()
 
 @sio.on(NAMESPACE + '/shutdown/communications')
 def onShutdown(msg):
@@ -383,22 +478,31 @@ def onWarning(msg):
 @sio.on(NAMESPACE + '/frontend/cmd')
 def onCmd(msg):
     conversion = heifu_definitions.TwistCv(msg)
-    HEIFU_INFO('cmd_vel')
+    #HEIFU_INFO('cmd_vel %s' % str(msg))
     pubCmd.publish(conversion)
 
+def unlock_gimbal_flag():
+    global gimbal_flag
+    gimbal_flag = True
 
 @sio.on(NAMESPACE + '/frontend/gimbal')
 def onGimbal(msg):
-    HEIFU_INFO('%s' % str(msg))
+    HEIFU_INFO('Gimbal %s' % str(msg))
     conversionGimbal = geometry_msgs.msg.Twist()
     conversionGimbal.angular.z = msg['x'] / 4.0
     gimbalControl = setGimbalAxesRequest()
     gimbalControl.pitch = -msg['y']
     gimbalControl.roll = 0
     gimbalControl.yaw = 0
-
-    srvGimbal(gimbalControl)
-
+    try:
+        global gimbal_flag
+        if gimbal_flag:
+            Timer(GIMBAL_MIN_DELAY, unlock_gimbal_flag, ()).start()
+            gimbal_flag = False
+            pass
+        srvGimbal(gimbalControl)
+    except Exception as e:
+        HEIFU_INFO('Error onGimbal callback' + str(e))
     if not conversionGimbal.angular.z == 0:
         pubCmd.publish(conversionGimbal)
         pass
@@ -429,10 +533,36 @@ def onLand(msg):
 @sio.on(NAMESPACE + '/frontend/takeoff')
 def onTakeoff(msg):
     global isMissionStarted
+    global noTakeoff
+    point = Point(UAVposition.latitude, UAVposition.longitude)
+    polygons = calculatePolygon(True)
+    if polygons:
+        for polygon in polygons:
+            if polygon.contains(point) == True:
+                HEIFU_INFO('I cant takeoff. Im inside a no fly zone.')
+                return
     pubTakeoff.publish()
     HEIFU_INFO('TAKEOFF')
     isMissionStarted = False
 
+
+@sio.on(NAMESPACE + '/mission/get')
+def onGetMission(msg):
+    global wpList
+    wp = []
+    for waypoint in wpList.waypoints:
+        jasonObject = json.dumps({
+        "command": waypoint.command, 
+        "param1": waypoint.param1, 
+        "param2": waypoint.param2, 
+        "param3": waypoint.param3, 
+        "param4": waypoint.param4, 
+        "x_lat": waypoint.x_lat, 
+        "y_long": waypoint.y_long, 
+        "z_alt": waypoint.z_alt}, sort_keys=True)
+        wp.append(jasonObject)
+        pass
+    sio.emit(NAMESPACE + '/mission/droneMission', wp)
 
 @sio.on(NAMESPACE + '/mission/push')
 def onPush(msg):
@@ -451,26 +581,30 @@ def onPush(msg):
     waypointList = WaypointList()
 
     # Adding global waypoint (probably to set altitude);
-    initialWaypoint = Waypoint()
-    initialWaypoint.frame = 0  # global
-    initialWaypoint.command = 16  # waypoint
-    initialWaypoint.is_current = False
-    initialWaypoint.autocontinue = True
-    initialWaypoint.param1 = 0
-    initialWaypoint.param2 = 0
-    initialWaypoint.param3 = 0
-    initialWaypoint.param4 = 0
-    initialWaypoint.x_lat = 0
-    initialWaypoint.y_long = 0
-    initialWaypoint.z_alt = 0
-    waypointList.waypoints.append(initialWaypoint)
+    # initialWaypoint = Waypoint()
+    # initialWaypoint.frame = 0  # global
+    # initialWaypoint.command = 16  # waypoint
+    # initialWaypoint.is_current = False
+    # initialWaypoint.autocontinue = True
+    # initialWaypoint.param1 = 0
+    # initialWaypoint.param2 = 0
+    # initialWaypoint.param3 = 0
+    # initialWaypoint.param4 = 0
+    # initialWaypoint.x_lat = 0
+    # initialWaypoint.y_long = 0
+    # initialWaypoint.z_alt = 0  # THIS MUST BE THE GLOBAL ALTITUDE OF THE DRONE IN THIS MOMENT
+    # waypointList.waypoints.append(initialWaypoint)
 
     i = 0
-    totalMissionSize = len(msg['waypoints'])
+    totalMissionSize = len(msg)
     while i < totalMissionSize:
-        conversionWP, codeWP = heifu_definitions.WaypointCv(msg['waypoints'][i])
+        conversionWP, codeWP = heifu_definitions.WaypointCv(msg[i])
         waypointList.waypoints.append(conversionWP)
-        if codeWP != int(206):  # only save codes different than camera trigger code
+        if codeWP == int(22):
+            conversionWP, codeWP = heifu_definitions.WaypointCv(msg[0])
+            waypointList.waypoints.append(conversionWP)
+            pass
+        if codeWP == int(16) or codeWP == int(22) or codeWP == int(21):  # only save codes different than camera trigger code
             waypointsCode.append(codeWP)
         i += 1
     totalWaypointsMission = len(waypointsCode)
@@ -482,16 +616,30 @@ def onPush(msg):
 
 
 def doMission(msg):
-    HEIFU_INFO('/mission/start %s' % str(msg))
-    pubTakeoff.publish()
-    time.sleep(3)  # Wait for takeoff 3 seconds
-    pubAuto.publish()
-    sio.emit(NAMESPACE + '/mission/startACK', '')
+    global noTakeoff
+    if noTakeoff == False:
+        HEIFU_INFO('/mission/start %s' % str(msg))
+        try:
+            srvSetMode(0, "GUIDED")
+            srvCmd(0, 400, 1, 1, 0, 0, 0, 0, 0, 0)
+            pass
+        except Exception as e:
+            HEIFU_INFO('Error on Arming Drone: ' + str(e))
+            pass
+        time.sleep(2)  # Wait for arm
+        try:
+            srvCmd(0, 300, 1, 1, 0, 0, 0, 0, 0, 0)
+            pass
+        except Exception as e:
+            HEIFU_INFO('Error on Start Mission: ' + str(e))
+            pass
+        sio.emit(NAMESPACE + '/mission/startACK', '')
 
 
 @sio.on(NAMESPACE + '/mission/start')
 def onMissionStart(msg):
     global isMissionStarted
+    print('STARTING MISSION')
 
     if 'isMissionStarted' in globals():
         if isMissionStarted:
@@ -529,25 +677,27 @@ def onRlt(msg):
 @sio.on(NAMESPACE + '/frontend/setpoint')
 def onSetpoint(msg):
     HEIFU_INFO('SetPoint')
-    waypointPosition = geographic_msgs.msg.GeoPose()
-    waypointPosition.position.altitude = msg['altitude']
-    waypointPosition.position.latitude = msg['latitude']
-    waypointPosition.position.longitude = msg['longitude']
+    pubStartMission.publish()
+    waypointPosition = geometry_msgs.msg.Pose()
+    waypointPosition.position.z = msg['altitude']
+    waypointPosition.position.x = msg['latitude']
+    waypointPosition.position.y = msg['longitude']
     pubSetPoint.publish(waypointPosition)
-
+    
+    pubStartPlanner.publish()
 
 def selectStream(msg):
     ####### Legion Camera for testing is the default
     startStreamDef = "gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-raw,framerate=30/1,width=640,height=480 ! videoconvert ! x264enc quantizer=25 \
-        tune=zerolatency bitrate=4096 ! \"video/x-h264,profile=baseline\"  ! rtph264pay mtu=1300 ! multiudpsink clients=127.0.0.1:" + str(
+        tune=zerolatency bitrate=4096 ! \"video/x-h264,profile=baseline\"  ! rtph264pay ! multiudpsink clients=127.0.0.1:" + str(
         msg) + ',' + janusIP + ':' + \
                      str(msg) + " sync=false async=false"
     if jetsonON:
         switcher = {
-            "realsense": "gst-launch-1.0 -v v4l2src device=/dev/video" + str(devId) + " ! 'video/x-raw,format=(string)YUY2, width=1280, height=720, framerate=30/1' ! nvvidconv !  \
-            nvv4l2h264enc control-rate=0 insert-sps-pps=1 bitrate=2048000 profile=0 ! rtph264pay ! multiudpsink \
+            "realsense": "gst-launch-1.0 -v v4l2src device=/dev/video" + str(devId) + " ! 'video/x-raw,format=(string)YUY2, width=1280, height=720, framerate=30/1' ! videoconvert !  \
+            x264enc pass=qual bitrate=8192 tune=zerolatency speed-preset=4 ! \"video/x-h264,profile=baseline\" ! rtph264pay ! multiudpsink \
             clients=" + janusIP + ':' + str(msg) + ", sync=false async=false",
-            "raspy": "gst-launch-1.0 -e nvarguscamerasrc ! 'video/x-raw(memory:NVMM), width=1920, height=1080, framerate=30/1' ! \
+            "raspy": "gst-launch-1.0 -e nvarguscamerasrc ! 'video/x-raw(memory:NVMM), width=1920, height=1080, framerate=30/1' ! nvvidconv flip-method=2 ! \
             nvv4l2h264enc bitrate=8000000 insert-sps-pps=true ! rtph264pay mtu=1400 ! multiudpsink clients=" + janusIP + ':' + str(
                 msg) + \
                      " sync=false async=false",
@@ -557,7 +707,7 @@ def selectStream(msg):
     else:
         switcher = {
             "realsense": "gst-launch-1.0 -v v4l2src device=/dev/video" + str(devId) + " ! 'video/x-raw,format=(string)YUY2, width=1280, height=720, framerate=30/1' ! videoconvert !  \
-            x264enc pass=qual quantizer=28 bitrate=8192 tune=zerolatency  ! \"video/x-h264,profile=baseline\" ! rtph264pay ! multiudpsink \
+            x264enc pass=qual bitrate=8192 tune=zerolatency speed-preset=4 ! \"video/x-h264,profile=baseline\" ! rtph264pay ! multiudpsink \
             clients=" + janusIP + ':' + str(msg) + ", sync=false async=false",
             "raspy": "gst-launch-1.0 -e nvarguscamerasrc ! 'video/x-raw(memory:NVMM), width=1920, height=1080, framerate=30/1' ! nvv4l2h264enc bitrate=8000000 \
             insert-sps-pps=true ! rtph264pay mtu=1400 ! multiudpsink clients=" + janusIP + ':' + str(
@@ -603,10 +753,20 @@ def onStream(msg):
     # startStream = "gst-launch-1.0 -v rtpbin name=rtpbin  rtspsrc location=rtsp://192.168.1.75/live/live ! rtph264depay ! decodebin ! x264enc ! "video/x-h264,profile=constrained-baseline" ! rtph264pay ! udpsink host=213.141.23.150 port=" + str(msg) + " sync=false async=false"
     # startStream = "gst-launch-1.0 -v rtpbin name=rtpbin  rtspsrc location=rtsp://192.168.1.78/live/live ! rtph264depay ! decodebin ! x264enc ! "video/x-h264,profile=constrained-baseline" ! rtph264pay ! udpsink host=213.63.130.247 port=" + str(msg) + " sync=false async=false"
 
-    startStream = selectStream(msg)
-    HEIFU_INFO('%s' % str(startStream))
-    output = subprocess.Popen(['bash', '-c', startStream + " & disown"])  # Run the process to video recorder
-    pidProcess = output.pid + 1  # Get the PID process
+    if camType == 'stab':
+        try:
+            os.system('bash ' + PROJECTPATH + 'runCameraStab.sh --port ' + str(msg) + ' &')
+        except:
+            print('error')
+        time.sleep(2)
+        f = open(PROJECTPATH + 'process_file', 'r')
+        pidProcess = int(f.read())
+        os.remove(PROJECTPATH + 'process_file')
+    else:
+        startStream = selectStream(msg)
+        HEIFU_INFO('%s' % str(startStream))
+        output = subprocess.Popen(['bash', '-c', startStream + " & disown"])  # Run the process to video recorder
+        pidProcess = output.pid + 1  # Get the PID process
     sio.emit(NAMESPACE + '/portACK', '')
 
 
@@ -614,8 +774,11 @@ def onStream(msg):
 def stopStream(msg):
     global pidProcess
     if 'pidProcess' in globals():
-        killCommand = "kill -2 " + str(pidProcess)  # Create the kill interrupt command
-        output = subprocess.call(['bash', '-c', killCommand])  # Run the process to video recorder
+        if camType == 'stab':
+            os.system('bash ' + PROJECTPATH + 'kill_process.sh ' + str(pidProcess))
+        else:
+            killCommand = "kill -2 " + str(pidProcess)  # Create the kill interrupt command
+            output = subprocess.call(['bash', '-c', killCommand])  # Run the process to video recorder
 
 
 @sio.on(NAMESPACE + '/listVideos')
@@ -784,10 +947,10 @@ def saveConfigFiles():
     else:
         f.write('waypointCounter\nnull\n')
 
-    if 'lastBatteryValue' in globals():
-        f.write('lastBatteryValue\n' + str(lastBatteryValue) + '\n')
-    else:
-        f.write('lastBatteryValue\nnull\n')
+    # if 'lastBatteryValue' in globals():
+      #  f.write('lastBatteryValue\n' + str(lastBatteryValue) + '\n')
+    # else:
+      #  f.write('lastBatteryValue\nnull\n')
 
     if 'waypointsCode' in globals():
         f.write('waypointsCode\n' + str(waypointsCode) + '\n')
@@ -824,9 +987,9 @@ def loadConfigFiles():
     if allParametersConfig[index] != "null":
         waypointCounter = int(allParametersConfig[index])
     index += 2
-    if allParametersConfig[index] != "null":
-        lastBatteryValue = float(allParametersConfig[index])
-    index += 2
+    # if allParametersConfig[index] != "null":
+      #  lastBatteryValue = float(allParametersConfig[index])
+    # index += 2
     if allParametersConfig[index] != "null":
         strWaypoints = allParametersConfig[index]
         strWaypoints = strWaypoints.replace('[', '')
@@ -835,6 +998,60 @@ def loadConfigFiles():
 
     f.close()
 
+def calculatethresholdMinDistances():
+    while True:
+        global thresholdMinAreas
+        global thresholdMinDistances
+        global location_array
+        sleep(1)
+        if UAVposition.longitude is not None and UAVposition.latitude is not None: 
+            thresholdAreaDistance = nfz_stop.thresholdClosestAreas(UAVposition, location_array)
+            thresholdMinAreas = thresholdAreaDistance[0]
+            thresholdMinDistances = thresholdAreaDistance[1]    
+ 
+
+def isInsideNoFlyZone():
+    while True:
+        global noTakeoff
+        global thresholdMinAreas
+        global manualisON
+        global heifuMode
+        if UAVposition.latitude is not None and UAVposition.longitude is not None:
+            point = Point(UAVposition.latitude, UAVposition.longitude)
+            if manualisON == True:
+                polygons = calculatePolygon(True)
+                if polygons:
+                    for polygon in polygons:
+                        if polygon.contains(point) == True:
+                            sio.emit(NAMESPACE + '/takeoffError' , {'msg': True})
+                            noTakeoff = True
+                            break
+                        else:
+                            noTakeoff = False
+            else:
+                polygon = calculatePolygon(False)
+                if polygon:
+                    if polygon.contains(point):
+                        sio.emit(NAMESPACE + '/takeoffError' , {'msg': True})
+                        noTakeoff = True
+                    else:
+                        noTakeoff = False
+        if noTakeoff == True and heifuMode != 'LAND':
+            pubLand.publish()
+        sleep(1)
+
+
+def setupNFZ():
+    global setupNFZdone
+    if enableNFZ:
+        setupNFZdone = True
+        global location_array
+        location_array = nfz_stop.seedCoordinates(UAVposition.latitude, UAVposition.longitude)
+        threadMinDistances = Thread(target = calculatethresholdMinDistances)
+        threadMinDistances.start()
+        threadInsideNoFlyZone = Thread(target = isInsideNoFlyZone)
+        threadInsideNoFlyZone.daemon = True
+        threadInsideNoFlyZone.start()
 
 if __name__ == '__main__':
     # Init node

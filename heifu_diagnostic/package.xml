@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>heifu_diagnostic</name>
-    <version>0.7.1</version>
+    <version>0.7.3</version>
     <description>Heifu diagnostic to get GPS status</description>
 
     <maintainer email="falmeida@pdmfc.com">Filipe Almeida</maintainer>
