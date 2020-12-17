@@ -4,8 +4,6 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 
-#include <ros_utils/Console.h>
-
 #include "heifu_msgs/EnableSafety.h"
 
 #include <geometry_msgs/PoseStamped.h>
