@@ -16,7 +16,7 @@ Heifu_mavros::Heifu_mavros():n("~") {
     subSimCommand            = n.subscribe(ns + "/simulation_raw", 10, &Heifu_mavros::cbConvertSIMCommand, this);
     subXBoxRawCommandFront   = n.subscribe(ns + "/frontend/cmd", 10, &Heifu_mavros::cbConvertXBoxCommand, this);
 	subAuto		             = n.subscribe(ns + "/mode_auto", 10, &Heifu_mavros::cbAuto, this);
-    subSetPointConverter     = n.subscribe(ns + "/setpoint_position", 10, &Heifu_mavros::cbSetPointConverter, this);
+    subSetPointConverter     = n.subscribe(ns + "/global_setpoint_converter", 10, &Heifu_mavros::cbSetPointConverter, this);
     subOdomUAV               = n.subscribe(ns + "/mavros/local_position/pose", 1, &Heifu_mavros::cbOdomUAV, this);
     subMissionStart          = n.subscribe(ns + "/mission/start", 10, &Heifu_mavros::cbMissionStart, this);
     subMissionStop           = n.subscribe(ns + "/mission/stop", 10, &Heifu_mavros::cbMissionStop, this);
@@ -33,6 +33,7 @@ Heifu_mavros::Heifu_mavros():n("~") {
     pubSimCommand       = n.advertise < geometry_msgs::Twist > (ns + "/simulation", 10);
     pubGpsFixState      = n.advertise < std_msgs::Int8 > (ns + "/g/f/m", 10);
     pubDesiredPosition  = n.advertise < geometry_msgs::PoseStamped > (ns + "/mavros/setpoint_position/local", 1);
+    pubSetPointConverter = n.advertise < geometry_msgs::Pose > (ns + "/GNSS_utils/goal_coordinates", 1);
     pubTakeoffDiagnostic = n.advertise <std_msgs::Bool> (ns + "/diagnostic/takeoff",1);
     pubLandDiagnostic = n.advertise <std_msgs::Bool> (ns + "/diagnostic/land",1);
 
@@ -51,7 +52,7 @@ Heifu_mavros::Heifu_mavros():n("~") {
     n.param<std::string>("paramTargetFrame", paramTargetFrame, "base_link");
     n.param<std::string>("paramSourceFrame", paramSourceFrame, "odom");
 
-    ros_utils::ROS_PRINT(ros_utils::WHITE_BOLD, "Mavros Node Ready");
+	ROS_INFO("Mavros Node Ready");
 }
 
 
@@ -65,7 +66,7 @@ void Heifu_mavros::run(){
             ROS_INFO_THROTTLE(1.0, "UAV Doing TakeOff!");
             ongoingTakeOff = (currentAltitude < desiredAltitude - paramTakeOffThreshold);
             if(!ongoingTakeOff) {
-                ros_utils::ROS_PRINT(ros_utils::GREEN_BOLD, "Takeoff Position Reached!");
+				ROS_INFO("Takeoff Position Reached!");
 
 				if (modeAuto) {
 					changeToAutoMode();
@@ -241,15 +242,17 @@ void Heifu_mavros::cbAuto(const std_msgs::EmptyConstPtr& msg){
 	//ros_utils::ROS_PRINT(ros_utils::GREEN_BOLD, "auto true");
 }
 
-void Heifu_mavros::cbSetPointConverter(const geometry_msgs::PoseConstPtr& msg){
-	geometry_msgs::PoseStamped globalSetpoint;
-    globalSetpoint.header.stamp = ros::Time::now();
-    globalSetpoint.pose.position.x = msg->position.x;
-    globalSetpoint.pose.position.y = msg->position.y;
-    globalSetpoint.pose.position.z = msg->position.z;
-    globalSetpoint.pose.orientation = currentPosition.pose.orientation;
+void Heifu_mavros::cbSetPointConverter(const geographic_msgs::GeoPose& msg){
+	geometry_msgs::Pose globalSetpoint;
+    globalSetpoint.position.x = msg.position.latitude;
+    globalSetpoint.position.y = msg.position.longitude;
+    globalSetpoint.position.z = msg.position.altitude;
+    globalSetpoint.orientation.x = 0;
+    globalSetpoint.orientation.y = 0;
+    globalSetpoint.orientation.z = 0;
+    globalSetpoint.orientation.w = 0;
 
-    pubDesiredPosition.publish(globalSetpoint);
+    pubSetPointConverter.publish(globalSetpoint);
 }
 
 void Heifu_mavros::changeToAutoMode(){

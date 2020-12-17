@@ -5,7 +5,6 @@
 #include <ros/package.h>
 #include <std_msgs/Int8.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
-#include <ros_utils/Console.h>
 
 namespace HD
 {

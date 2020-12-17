@@ -18,7 +18,6 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <tf/transform_listener.h>
 #include <math.h>
-#include <ros_utils/Console.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
@@ -114,7 +113,7 @@ namespace HM
         void changeToGuidedMode();
         void cbRTL(const std_msgs::EmptyConstPtr& msg);
         void cbAuto(const std_msgs::EmptyConstPtr& msg);
-        void cbSetPointConverter(const geometry_msgs::PoseConstPtr& msg);
+        void cbSetPointConverter(const geographic_msgs::GeoPose& msg);
     };
 
 }
