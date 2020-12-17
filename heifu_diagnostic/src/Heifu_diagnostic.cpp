@@ -44,11 +44,11 @@ void Heifu_diagnostic::cbCheckGpsFix(const diagnostic_msgs::DiagnosticArrayConst
                     {
                         case 0:
                             gpsFixMode.data = 0;
-                            ros_utils::ROS_PRINT(ros_utils::BLUE_BOLD, "FixType: No GPS");
+							ROS_INFO("FixType: No GPS");
                             break;
                         case 1:
                             gpsFixMode.data = 1;
-                            ros_utils::ROS_PRINT(ros_utils::BLUE_BOLD, "FixType: No FIX");
+							ROS_INFO("FixType: No FIX");
                             break;
                         case 2:
                             gpsFixMode.data = 2;

@@ -21,7 +21,7 @@ HeifuSafety::HeifuSafety():n("~") {
     safetyVelocity.linear.x  = safetyVelocity.linear.y  = safetyVelocity.linear.z  = 0;
     safetyVelocity.angular.x = safetyVelocity.angular.y = safetyVelocity.angular.z = 0;
 
-    ros_utils::ROS_PRINT(ros_utils::WHITE_BOLD, "Safety Fence Node Ready");
+	ROS_INFO("Safety Fence Node Ready");
 }
 
 void HeifuSafety::run(){
@@ -48,7 +48,7 @@ bool HeifuSafety::enableSafety(heifu_msgs::EnableSafety::Request &req, heifu_msg
     else
     {
         res.success = false;
-        ros_utils::ROS_PRINT(ros_utils::RED_NORMAL,"Please insert a valid safety distance (> 0).");
+		ROS_ERROR("Please insert a valid safety distance (> 0).");
 
         enableSafetyFence = false;
         safetyDistance    = -1.0;
@@ -73,15 +73,15 @@ bool HeifuSafety::enableSafety(heifu_msgs::EnableSafety::Request &req, heifu_msg
 
     if(res.success)
     {
-        ros_utils::ROS_PRINT(ros_utils::WHITE_BOLD,"SERVICE REQUEST RESULT: \033[32mSUCCESS");
+		ROS_INFO("SERVICE REQUEST RESULT: \033[32mSUCCESS");
 
         if(enableSafetyFence)
-            ros_utils::ROS_PRINT(ros_utils::WHITE_BOLD,"          SAFETY FENCE: \033[32mENABLED");
+			ROS_INFO("          SAFETY FENCE: \033[32mENABLED");
         else
-            ros_utils::ROS_PRINT(ros_utils::WHITE_BOLD,"          SAFETY FENCE: \033[31mDISABLED");
+			ROS_INFO("          SAFETY FENCE: \033[31mDISABLED");
     }
     else
-        ros_utils::ROS_PRINT(ros_utils::WHITE_BOLD,"SERVICE REQUEST RESULT: \033[31mFAILED");
+		ROS_INFO("SERVICE REQUEST RESULT: \033[31mFAILED");
 }
 
 void HeifuSafety::cbOdomUAV(const geometry_msgs::PoseStampedConstPtr &msg)
