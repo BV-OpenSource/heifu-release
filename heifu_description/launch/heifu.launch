@@ -17,8 +17,8 @@
 
     <!-- ArduPilot SITL and vehicle spawn -->
     <include file="$(find heifu_description)/launch/heifu_spawn.launch">
-        <arg name="x" value="$(arg yi)"/>
-        <arg name="y" value="$(eval -1 * arg('xi'))"/>
+        <arg name="x" value="$(arg xi)"/>
+        <arg name="y" value="$(arg yi)"/>
         <arg name="z" value="$(arg zi)"/>
         <arg name="R" value="0"/>
         <arg name="P" value="0"/>
