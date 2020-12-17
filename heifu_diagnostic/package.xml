@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>heifu_diagnostic</name>
-    <version>0.7.3</version>
+    <version>0.7.2</version>
     <description>Heifu diagnostic to get GPS status</description>
 
     <maintainer email="falmeida@pdmfc.com">Filipe Almeida</maintainer>
@@ -13,13 +13,11 @@
     <build_depend>mavros</build_depend>
     <build_depend>roscpp</build_depend>
     <build_depend>roslib</build_depend>
-    <build_depend>ros_utils</build_depend>
     <build_depend>std_msgs</build_depend>
 
     <run_depend>mavros</run_depend>
     <run_depend>roscpp</run_depend>
     <run_depend>roslib</run_depend>
-    <run_depend>ros_utils</run_depend>
     <run_depend>std_msgs</run_depend>
 
     <!-- The export tag contains other, unspecified, tags -->
