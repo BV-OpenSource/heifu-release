@@ -114,7 +114,7 @@ namespace HM
         void changeToGuidedMode();
         void cbRTL(const std_msgs::EmptyConstPtr& msg);
         void cbAuto(const std_msgs::EmptyConstPtr& msg);
-        void cbSetPointConverter(const geographic_msgs::GeoPose& msg);
+        void cbSetPointConverter(const geometry_msgs::PoseConstPtr& msg);
     };
 
 }

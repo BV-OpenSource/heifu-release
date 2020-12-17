@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="sensors_node" type="sensors_node.py" pkg="sensors_node" output="screen" respawn="false" >
+    </node>
+</launch>
+
