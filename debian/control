@@ -1,0 +1,12 @@
+Source: ros-melodic-heifu-simple-waypoint
+Section: misc
+Priority: optional
+Maintainer: João Pedro Carvalho <joao.m.carvalho@pdmfc.com>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-mavros, ros-melodic-roscpp, ros-melodic-roslib, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-tf
+Homepage: https://gitlab.pdmfc.com/drones/heifu/tree/master/heifu_simple_waypoint
+Standards-Version: 3.9.2
+
+Package: ros-melodic-heifu-simple-waypoint
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-mavros, ros-melodic-roscpp, ros-melodic-roslib, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-tf
+Description: Heifu mavros interface

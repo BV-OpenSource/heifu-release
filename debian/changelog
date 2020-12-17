@@ -1,0 +1,19 @@
+ros-melodic-heifu-simple-waypoint (0.7.2-1bionic) bionic; urgency=high
+
+  * Remove ros_utils from all packages.
+  * Contributors: André Filipe
+
+ -- João Pedro Carvalho <joao.m.carvalho@pdmfc.com>  Thu, 17 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-simple-waypoint (0.7.1-1bionic) bionic; urgency=high
+
+  * Make sure every package has the same version number.
+  * initial commit
+  * reverted changes to other files
+  * initial commit
+  * Packages and updates cleaned
+  * Contributors: André, João Madeira, falmeida, jmadeira
+
+ -- João Pedro Carvalho <joao.m.carvalho@pdmfc.com>  Thu, 27 Aug 2020 23:00:00 -0000
+
+
