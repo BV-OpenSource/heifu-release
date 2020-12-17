@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <arg name="argNamespace"        default="heifu"/>
-    <!-- Launch mavros node -->
-    <node name="heifu_battery" type="heifu_battery_node" pkg="heifu_battery" output="screen" ns="$(arg argNamespace)" respawn="true">
-    </node>
-
-</launch>

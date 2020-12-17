@@ -7,7 +7,6 @@
 * geographic-msgs
 * tf2-eigen
 * control-toolbox
-* ros_utils [here](https://gitlab.pdmfc.com/drones/ros1/drone-generic/tree/master/src/ros_utils)
 * GNSS_utils [here](https://gitlab.pdmfc.com/drones/ros1/utils/gnss-utils)
 
 
@@ -76,94 +75,8 @@ roslaunch heifu_bringup heifu_bringup.launch argSim:=true
 cd ~/ardupilot/ArduCopter/
 sim_vehicle.py -v ArduCopter -f gazebo-heifu -I1
 ```
-3rd terminal - Launch Client Interface (Only to work on Beyond Skyline app)
-```sh
-cd ~/heifu_ws/src/heifu/heifu_interface
-python heifu_interface.py
-```
-
-To load Multples drones in simulation:
-1st terminal - Launch Heifu_bringup
-
-
-where that arguments must be unique:
-- DRONE_NAME: Drone namespace
-- DRONE_NUMBER: Drone ID number to simulated firmware (must be the same value launched in ArduPilot Firmware argument "-I")
-- LOCAL_POSITION_X: Local position X that the drone will be spawned in meters
-- LOCAL_POSITION_Y: Local position Y that the drone will be spawned in meters
-
-Run Gazebo first:
-```sh
-roslaunch heifu_description gazebo.launch 
-```
-
-Script to launch a drone in simulation:
-```sh
-cd ~/heifu_ws/src/heifu/scripts
-sh spawn_drone.sh DRONE_NAME DRONE_ID DRONE_POSITION_X DRONE_POSITION_Y
-```
-
-Without script:
-
-```sh
-roslaunch heifu_bringup heifu_bringup.launch argSim:=true argNamespace:=DRONE_NAME argID:=DRONE_NUMBER xi:=LOCAL_POSITION_X yi:=LOCAL_POSITION_Y gazebo:=false
-```
-
-2nd terminal - Launch ArduPilot firmware
-The argument -I must be the same DRONE_NUMBER
-```sh
-cd ~/ardupilot/ArduCopter/
-sim_vehicle.py -v ArduCopter -f gazebo-heifu -IDRONE_NUMBER
-```
-
-3rd terminal - Launch Client Interface
-The argument DRONE_NAME must be the same on Heifu_bringup
-```sh
-cd ~/heifu_ws/src/heifu/heifu_interface
-python heifu_interface.py DRONE_NAME
-```
-
-Example to 2 drones in simulation:
-Launch Gazebo:
-```sh
-roslaunch heifu_description gazebo.launch 
-```
-Launch drone 1:
-1st terminal - Launch Heifu_bringup DRONE 1
-```sh
-roslaunch heifu_bringup heifu_bringup.launch argSim:=true argNamespace:=heifu argID:=1 xi:=10 yi:=5 gazebo:=false
-```
-2nd terminal - Launch ArduPilot firmware DRONE 1
-```sh
-cd ~/ardupilot/ArduCopter/
-sim_vehicle.py -v ArduCopter -f gazebo-heifu -I1
-```
-
-3rd terminal - Launch Client Interface DRONE 1
-```sh
-cd ~/heifu_ws/src/heifu/heifu_interface
-python heifu_interface.py heifu
-```
-
-Launch drone 2:
-1st terminal - Launch Heifu_bringup DRONE 2
-```sh
-roslaunch heifu_bringup heifu_bringup.launch argSim:=true argNamespace:=valk argID:=2 xi:=-10 yi:=-5 gazebo:=false
-```
-2nd terminal - Launch ArduPilot firmware DRONE 2
-```sh
-cd ~/ardupilot/ArduCopter/
-sim_vehicle.py -v ArduCopter -f gazebo-heifu -I2
-```
-
-3rd terminal - Launch Client Interface DRONE 2
-```sh
-cd ~/heifu_ws/src/heifu/heifu_interface
-python heifu_interface.py valk
-```
-
-
-
+	
+	
 ------
 
 # Packages

@@ -9,7 +9,7 @@ Before starting the interface, make sure that you have ROS and Mavros running an
 
 `pip install "python-socketio[client]"==4.4.0`
 
-`pip install python-engineio==3.11.2`
+`pip install python-engineio==3.11.1`
 
 To run the interface, move to the directory and run:
 
@@ -110,28 +110,3 @@ URLWS = 'https://beyond-skyline-backend.preprod.pdmfc.com'
 
 * For a RealSense Cam on Jetson Nano:
     startStream = "gst-launch-1.0 -v v4l2src device=/dev/video3 ! 'video/x-raw,format=(string)YUY2, width=1920, height=1080, framerate=30/1' ! nvvidconv ! nvv4l2h264enc bitrate=8000000 insert-sps-pps=true ! rtph264pay mtu=1400 ! multiudpsink clients={DESIRED IP}:{DESIRED PORT} " sync=false async=false"
-
-#### NFZ Enable
-
-First we need to install the following packages:
-
-```
-sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
-sudo apt-get update
-sudo apt-get install gdal-bin
-```
-
-
-Verify if the version is 2.2.3 witht the following command:
-```
-ogrinfo --version
-```
-
-```
-sudo apt-get install libgdal-dev
-export CPLUS_INCLUDE_PATH=/usr/include/gdal
-export C_INCLUDE_PATH=/usr/include/gdal
-pip install GDAL == 2.2.3
-```
-
-To use NFZ, change variable enableNFZ to True in heifu_interface.py
