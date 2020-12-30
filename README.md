@@ -2,7 +2,7 @@
 
 **ROS packages dependences:**
 * gazebo-ros
-* mavros [here](https://gitlab.pdmfc.com/drones/ros1/mavros)
+* mavros [here](https://gitlab.pdmfc.com/drones/ros1/control/mavros)
 * mavlink
 * geographic-msgs
 * tf2-eigen
