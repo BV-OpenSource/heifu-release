@@ -1,0 +1,29 @@
+ros-melodic-heifu-description (0.7.6-1bionic) bionic; urgency=high
+
+
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Wed, 30 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-description (0.7.5-1bionic) bionic; urgency=high
+
+  * Delete conflicting CMakeLists. Add Gazebo environment variables to heifu_description's CMakeLists.
+  * Update version to 0.7.4. Try to fix rosdistro build.
+  * Contributors: André Filipe
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Wed, 30 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-description (0.7.2-1bionic) bionic; urgency=high
+
+
+
+ -- Ricardo Sacoto Martins <rmartins@pdmfc.com>  Thu, 17 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-description (0.7.1-1bionic) bionic; urgency=high
+
+  * initial commit
+  * Packages and updates cleaned
+  * Contributors: falmeida, jmadeira
+
+ -- Ricardo Sacoto Martins <rmartins@pdmfc.com>  Thu, 27 Aug 2020 23:00:00 -0000
+
+
