@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package>
     <name>heifu_diagnostic</name>
-    <version>0.7.2</version>
+    <version>0.7.6</version>
     <description>Heifu diagnostic to get GPS status</description>
 
-    <maintainer email="falmeida@pdmfc.com">Filipe Almeida</maintainer>
+    <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
+    <maintainer email="andre.ferreira@beyond-vision.pt">André Ferreira</maintainer>
 
     <license>BSD</license>
-    <url>https://gitlab.pdmfc.com/drones/heifu/tree/master/heifu_diagnostic</url>
 
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>mavros</build_depend>
