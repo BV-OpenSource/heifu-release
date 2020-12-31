@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>heifu_simple_waypoint</name>
-    <version>0.7.6</version>
+    <version>0.7.7</version>
     <description>Heifu mavros interface</description>
 
     <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
