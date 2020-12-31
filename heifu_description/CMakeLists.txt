@@ -1,26 +1,25 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(heifu_description)
 
-find_package(gazebo REQUIRED)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
-
 find_package(catkin REQUIRED COMPONENTS
+    gazebo_dev
     roslaunch
 )
 
 catkin_package( INCLUDE_DIRS
-        ${GAZEBO_INCLUDE_DIRS}
-    DEPENDS
-        GAZEBO)
+                    ${gazebo_dev_INCLUDE_DIRS}
+                CATKIN_DEPENDS
+                    gazebo_dev
+                    roslaunch
+                    )
 
 include_directories(
     ${PROJECT_SOURCE_DIR}
-    ${GAZEBO_INCLUDE_DIRS}
+    ${gazebo_dev_INCLUDE_DIRS}
 )
 
 link_directories(
-    ${GAZEBO_LIBRARY_DIRS}
+    ${gazebo_dev_LIBRARY_DIRS}
 )
 
 ## Add Directories
