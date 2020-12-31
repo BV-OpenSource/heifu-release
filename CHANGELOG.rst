@@ -2,6 +2,19 @@
 Changelog for package heifu_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.7 (2020-12-31)
+------------------
+* Update Changelogs after merge!
+* Merge remote-tracking branch 'origin/releasePackageTest' into releasePackage
+* Change heifu_description dependency tree.
+* Add heifu metapackage.
+* Contributors: André Filipe, Fábio Azevedo
+
+* Merge remote-tracking branch 'origin/releasePackageTest' into releasePackage
+* Change heifu_description dependency tree.
+* Add heifu metapackage.
+* Contributors: André Filipe, Fábio Azevedo
+
 0.7.6 (2020-12-30)
 ------------------
 
