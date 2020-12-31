@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>heifu_safety</name>
-    <version>0.7.6</version>
+    <version>0.7.7</version>
     <description>This package enables an allowable safety zone to control the drone with a joystick.</description>
 
     <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
