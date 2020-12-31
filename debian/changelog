@@ -1,0 +1,50 @@
+ros-melodic-heifu-mavros (0.7.7-1bionic) bionic; urgency=high
+
+  * Update Changelogs after merge!
+  * Change heifu_description dependency tree.
+  * Add heifu metapackage.
+  * Contributors: André Filipe, Fábio Azevedo
+  * Change heifu_description dependency tree.
+  * Add heifu metapackage.
+  * Contributors: André Filipe, Fábio Azevedo
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Thu, 31 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-mavros (0.7.6-1bionic) bionic; urgency=high
+
+
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Wed, 30 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-mavros (0.7.5-1bionic) bionic; urgency=high
+
+  * Update version to 0.7.4. Try to fix rosdistro build.
+  * Contributors: André Filipe
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Wed, 30 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-mavros (0.7.2-1bionic) bionic; urgency=high
+
+  * Remove ros_utils from all packages.
+  * Contributors: André Filipe
+
+ -- João Pedro Carvalho <joao.m.carvalho@pdmfc.com>  Thu, 17 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-mavros (0.7.1-1bionic) bionic; urgency=high
+
+  * Make sure every package has the same version number.
+  * initial commit
+  * add print when calibrating pixhawk's mag
+  * cancel current mission option
+  * merged with master
+  * takeoff and land acks
+  * Merge branch 'master' of https://gitlab.pdmfc.com/drones/ros1/heifu
+  * Fix raspcam launch
+  * Small bug fix on convert control
+  * Fix auto respawn MAVROS Apm node.
+  * Packages and updates cleaned
+  * Contributors: André, Filipe, Ricardo Sacoto Martins, falmeida, jmadeira, jmcarvalho
+
+ -- João Pedro Carvalho <joao.m.carvalho@pdmfc.com>  Thu, 27 Aug 2020 23:00:00 -0000
+
+
