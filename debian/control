@@ -1,0 +1,12 @@
+Source: ros-melodic-heifu
+Section: misc
+Priority: optional
+Maintainer: André Ferreira <andre.ferreira@beyond-vision.pt>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin
+Homepage: http://wiki.ros.org/heifu
+Standards-Version: 3.9.2
+
+Package: ros-melodic-heifu
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-heifu-bringup, ros-melodic-heifu-description, ros-melodic-heifu-mavros, ros-melodic-heifu-msgs, ros-melodic-heifu-safety, ros-melodic-heifu-simple-waypoint, ros-melodic-heifu-tools
+Description: The heifu metapackage that installs all heifu related packages.

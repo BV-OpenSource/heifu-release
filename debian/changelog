@@ -1,0 +1,11 @@
+ros-melodic-heifu (0.7.7-2bionic) bionic; urgency=high
+
+  * Update Changelogs after merge!
+  * Add heifu metapackage.
+  * Contributors: André Filipe
+  * Add heifu metapackage.
+  * Contributors: André Filipe
+
+ -- André Ferreira <andre.ferreira@beyond-vision.pt>  Thu, 31 Dec 2020 00:00:00 -0000
+
+
