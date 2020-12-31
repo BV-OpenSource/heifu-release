@@ -1,0 +1,41 @@
+ros-melodic-heifu-bringup (0.7.7-2bionic) bionic; urgency=high
+
+  * Update Changelogs after merge!
+  * Change heifu_description dependency tree.
+  * Add heifu metapackage.
+  * Contributors: André Filipe, Fábio Azevedo
+  * Change heifu_description dependency tree.
+  * Add heifu metapackage.
+  * Contributors: André Filipe, Fábio Azevedo
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Thu, 31 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-bringup (0.7.6-2bionic) bionic; urgency=high
+
+
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Wed, 30 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-bringup (0.7.5-2bionic) bionic; urgency=high
+
+  * Update version to 0.7.4. Try to fix rosdistro build.
+  * Contributors: André Filipe
+
+ -- Fábio Azevedo <fabio.azevedo@beyond-vision.pt>  Wed, 30 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-bringup (0.7.2-2bionic) bionic; urgency=high
+
+
+
+ -- João Pedro Carvalho <joao.m.carvalho@pdmfc.com>  Thu, 17 Dec 2020 00:00:00 -0000
+
+ros-melodic-heifu-bringup (0.7.1-2bionic) bionic; urgency=high
+
+  * fixed xml
+  * Added gimbal launch control
+  * Packages and updates cleaned
+  * Contributors: falmeida, jmadeira
+
+ -- João Pedro Carvalho <joao.m.carvalho@pdmfc.com>  Thu, 27 Aug 2020 23:00:00 -0000
+
+
