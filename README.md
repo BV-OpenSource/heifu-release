@@ -1,3 +1,35 @@
+## heifu (melodic) - 0.7.7-1
+
+The packages in the `heifu` repository were released into the `melodic` distro by running `/usr/local/bin/bloom-release --rosdistro melodic --track melodic heifu` on `Thu, 31 Dec 2020 11:04:11 -0000`
+
+These packages were released:
+- `heifu`
+- `heifu_bringup`
+- `heifu_description`
+- `heifu_diagnostic`
+- `heifu_mavros`
+- `heifu_msgs`
+- `heifu_safety`
+- `heifu_simple_waypoint`
+- `heifu_tools`
+
+Version of package(s) in repository `heifu`:
+
+- upstream repository: https://gitlab.pdmfc.com/drones/ros1/heifu.git
+- release repository: https://github.com/BV-OpenSource/heifu-release.git
+- rosdistro version: `0.7.6-1`
+- old version: `0.7.6-1`
+- new version: `0.7.7-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.7`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.20.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## heifu (melodic) - 0.7.6-1
 
 The packages in the `heifu` repository were released into the `melodic` distro by running `/usr/local/bin/bloom-release --rosdistro melodic --track melodic heifu` on `Wed, 30 Dec 2020 15:53:46 -0000`
