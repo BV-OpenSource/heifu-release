@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>heifu_bringup</name>
-    <version>0.7.6</version>
+    <version>0.7.7</version>
     <description>Heifu is a ROS driver for PDMFC and BEV drone</description>
 
     <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
