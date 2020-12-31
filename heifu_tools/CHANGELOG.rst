@@ -2,6 +2,17 @@
 Changelog for package heifu_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.7 (2020-12-31)
+------------------
+* Update Changelogs after merge!
+* Change heifu_description dependency tree.
+* Add heifu metapackage.
+* Contributors: André Filipe, Fábio Azevedo
+
+* Change heifu_description dependency tree.
+* Add heifu metapackage.
+* Contributors: André Filipe, Fábio Azevedo
+
 0.7.6 (2020-12-30)
 ------------------
 
