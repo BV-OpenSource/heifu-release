@@ -1,0 +1,12 @@
+Source: ros-melodic-rrt
+Section: misc
+Priority: optional
+Maintainer: amferreira <amferreira@todo.todo>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-geometry-msgs, ros-melodic-mavros-msgs, ros-melodic-planner, ros-melodic-roscpp, ros-melodic-tf, ros-melodic-visualization-msgs
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-melodic-rrt
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-geometry-msgs, ros-melodic-mavros-msgs, ros-melodic-planner, ros-melodic-roscpp, ros-melodic-tf, ros-melodic-visualization-msgs
+Description: The RRT package
