@@ -1,89 +1,46 @@
-# HEIFU Repository
+# RRT
 
-## Pre-requisites
-**Install ROS acording to your distribuiton:**
+## Description
 
-ROS Instalation page can be found [here](http://wiki.ros.org/ROS/Installation).
+Package to plan a route for Heifu using RRT.
 
-**Install all dependencies:**
+## Running
+
+### In order to use simulation:
+
+Terminal 1
 ```bash
-sudo apt install python-catkin-tools
-sudo apt install -y ros-$ROS_DISTRO-joy ros-$ROS_DISTRO-joy-teleop ros-$ROS_DISTRO-mavlink libgeographic-dev ros-$ROS_DISTRO-geographic-msgs gdal-bin libgdal-dev wget geographiclib-tools libgeographic-dev gstreamer1.0-tools libgstreamer1.0-dev
-wget https://gitlab.pdmfc.com/drones/ros1/heifu/-/raw/master/heifu_scripts_firmware/loader.py
-sudo cp loader.py /opt/ros/$ROS_DISTRO/lib/python2.7/dist-packages/roslaunch/
-rm loader.py
+roscore
 ```
 
-## Installation
-
-**NOTE:** It's recommended too add a SSH key to your gitlab account.
-
-### Start by cloning
+Terminal 2
 ```bash
-cd <your_workspace_path>/src
-git clone -b newVersion git@gitlab.pdmfc.com:drones/ros1/heifu-uav/heifu.git
-cd heifu
-git submodule update --init --recursive
+cd {ardupilot_PATH}/ArduCopter
+./../Tools/autotest/sim_vehicle.py -f gazebo-heifu -v ArduCopter
 ```
 
-### Compile your workspace
-
-Run the script in:
+Terminal 3
 ```bash
-./control/mavros/mavros/scripts/install_geographiclib_datasets.sh
+roslaunch heifu_description gazebo.launch
 ```
 
-#### In case that GPU is **NOT** present or NOT wanted to be used:
--   ```bash
-    catkin config --blacklist collision_avoidance gpu_voxels_ros planner planners_manager rrt
-    ```
+------
 
-Follow instructions on packages:
-- interface/gcs-interface
-- sensing/gpu_voxels_ros (ignore if [last step](#in-case-that-gpu-is-not-present-or-not-wanted-to-be-used) was taken)
+If in simulation, run this in the simulation computer. If in real situation, run it in the Heifu.
 
-At last, compile your workspace:
-```
-catkin build
-```
-
-### Source Your Workspace:
-
+Terminal 1
 ```bash
-echo 'source <your_workspace_path>/devel/setup.bash' >> ~/.bashrc
-source ~/.bashrc
+roslaunch heifu_mavros heifu_mavros.launch
 ```
-
-## HELP - How to get going
-
+Terminal 2
 ```bash
-roslaunch heifu-bringup heifu_bringup.launch argVehicle:="heifu" argID:=0 argSimulation:=false
+roslaunch octomap_server RRT_octomap_mapping.launch
 ```
 
-## Package description
-**GCS Interface:**
-Interface for converting commands and information from and to a remote control station, respectively.
+### Usage
 
-**Waypoint Manager:**
-Reads mission files from the UAV and sends them to the respective nodes. Allows following a mission in guided mode.
-
-**GNSS Utils:**
-Auxiliary to the Waypoints manager package. Converts global coordinates to local coordinates.
-
-**Planners:**
-Responsible for finding a collision-free path to the desired waypoint.
-
-**Collision Avoidance:**
-Deals with the information from the perception sensors and ensures the safety of the UAV.
-
-**Priority Manager:**
-Receives all setpoints from the respective packages. Responsible for managing the priorities of each package, sending always the command with the highest priority to the navigation controller.
-
-**Mavros Commands:**
-Responsible for general flight commands handling, such as takeoff, land, and mode changes.
-
-**Navigation Controller:**
-Responsible for controlling and completing given waypoints. Can be used with position setpoints or velocity setpoints. Guarantees that the requested position is achieved. Can receive a velocity bypass setpoint.
-
-**Mavros:**
-Responsible for the comunication between ROS and the flight controller firmware. Uses the MAVlink protocol.
+The node can be launched by calling the [PlannerManager](../../planners_manager/tree/master/launch/Planners_Manager.launch) launch file with the [argPlannerType](../../planners_manager#arguments) set as 1.
+```bash
+roslaunch planners_manager Planners_Manager.launch argPlannerType:=1
+```
+------
