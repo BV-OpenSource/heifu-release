@@ -1,0 +1,12 @@
+Source: ros-melodic-mavros-commands
+Section: misc
+Priority: optional
+Maintainer: Fábio Azevedo <fabio.azevedo@beyond-vision.pt>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-mavros, ros-melodic-mavros-msgs, ros-melodic-roscpp, ros-melodic-std-msgs
+Homepage: https://gitlab.pdmfc.com/drones/ros1/control/mavros-commands
+Standards-Version: 3.9.2
+
+Package: ros-melodic-mavros-commands
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-mavros, ros-melodic-mavros-msgs, ros-melodic-roscpp, ros-melodic-std-msgs
+Description: Mavros Common Commands
