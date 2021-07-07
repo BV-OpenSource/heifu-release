@@ -1,7 +1,0 @@
-[submodule "status-diagnostic"]
-	path = status-diagnostic
-	url = git@gitlab.pdmfc.com:drones/ros1/interface/status-diagnostic.git
-    branch = master
-[submodule "gcs-interface"]
-	path = gcs-interface
-	url = git@gitlab.pdmfc.com:drones/ros1/interface/gcs-interface.git
