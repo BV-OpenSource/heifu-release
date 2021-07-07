@@ -1,9 +1,0 @@
-<library path="lib/libplanners_manager_nodelet">
-	<class name="Planners_ManagerNodelet"
-		type="Planners_ManagerNodelet::Planners_ManagerNodelet"
-		base_class_type="nodelet::Nodelet">
-		<description>
-			Planners Manager Nodelet
-		</description>
-	</class>
-</library>
