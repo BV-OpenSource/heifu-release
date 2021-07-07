@@ -1,0 +1,12 @@
+Source: ros-melodic-bev-mavros
+Section: misc
+Priority: optional
+Maintainer: aferreira <aferreira@todo.todo>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-melodic-bev-mavros
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, 
+Description: The heifu mavros package
