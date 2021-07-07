@@ -1,224 +1,89 @@
-# Installation
+# HEIFU Repository
 
-**ROS packages dependences:**
-* gazebo-ros
-* mavros [here](https://gitlab.pdmfc.com/drones/ros1/control/mavros)
-* mavlink
-* geographic-msgs
-* tf2-eigen
-* control-toolbox
-* GNSS_utils [here](https://gitlab.pdmfc.com/drones/ros1/utils/gnss-utils)
+## Pre-requisites
+**Install ROS acording to your distribuiton:**
 
+ROS Instalation page can be found [here](http://wiki.ros.org/ROS/Installation).
 
-**GeographicLib dependeces:**
-
+**Install all dependencies:**
 ```bash
-sudo apt-get install libgeographic-dev
-sudo apt-get install geographiclib-tools
+sudo apt install python-catkin-tools
+sudo apt install -y ros-$ROS_DISTRO-joy ros-$ROS_DISTRO-joy-teleop ros-$ROS_DISTRO-mavlink libgeographic-dev ros-$ROS_DISTRO-geographic-msgs gdal-bin libgdal-dev wget geographiclib-tools libgeographic-dev gstreamer1.0-tools libgstreamer1.0-dev
+wget https://gitlab.pdmfc.com/drones/ros1/heifu/-/raw/master/heifu_scripts_firmware/loader.py
+sudo cp loader.py /opt/ros/$ROS_DISTRO/lib/python2.7/dist-packages/roslaunch/
+rm loader.py
 ```
+
+## Installation
+
+**NOTE:** It's recommended too add a SSH key to your gitlab account.
+
+### Start by cloning
+```bash
+cd <your_workspace_path>/src
+git clone -b newVersion git@gitlab.pdmfc.com:drones/ros1/heifu-uav/heifu.git
+cd heifu
+git submodule update --init --recursive
+```
+
+### Compile your workspace
 
 Run the script in:
-[install_geographiclib_datasets.sh](https://github.com/mavlink/mavros/blob/master/mavros/scripts/install_geographiclib_datasets.sh)
+```bash
+./control/mavros/mavros/scripts/install_geographiclib_datasets.sh
+```
 
+#### In case that GPU is **NOT** present or NOT wanted to be used:
+-   ```bash
+    catkin config --blacklist collision_avoidance gpu_voxels_ros planner planners_manager rrt
+    ```
 
-Compile this directory in your ROS workspace.
+Follow instructions on packages:
+- interface/gcs-interface
+- sensing/gpu_voxels_ros (ignore if [last step](#in-case-that-gpu-is-not-present-or-not-wanted-to-be-used) was taken)
 
-Then copy the already configured files to the *mavros* directory:
+At last, compile your workspace:
+```
+catkin build
+```
+
+### Source Your Workspace:
 
 ```bash
-cd ${YOUR_ROS_WORKSPACE}/src/heifu/heifu_scripts_firmware
-cp apm_config.yaml $(rospack find mavros)/launch/
-cp apm.launch $(rospack find mavros)/launch/
-cp node.launch $(rospack find mavros)/launch/
+echo 'source <your_workspace_path>/devel/setup.bash' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-**NOTE:** Adjust the yaml loader script to deal with the argument substitution in the *roslaunch* of yaml files:
+## HELP - How to get going
+
 ```bash
-cd ${YOUR_ROS_WORKSPACE}/src/heifu/heifu_scripts_firmware
-cp loader.py /opt/ros/melodic/lib/python2.7/dist-packages/roslaunch/
-```
-Dont forget to add [gimbal](https://gitlab.pdmfc.com/drones/ros1/gimbals/arrishobby-zhaoyun) and [mavros](https://gitlab.pdmfc.com/drones/ros1/mavros.git) to the source folder and run `catkin build`
-
-To run the nodes with a real drone:
-
-Just launch - Heifu_bringup
-```sh
-roslaunch heifu_bringup heifu_bringup.launch
+roslaunch heifu-bringup heifu_bringup.launch argVehicle:="heifu" argID:=0 argSimulation:=false
 ```
 
-**Launch Input arguments:**
-```sh
-    argSafety - Activates the safety zone mode and run the node heifu_safety.
-    argTakeOffAltitude - Defines the Takeoff altitude.
-    argSim - Activates the simulation mode. Loads Gazebo and a pre-configured world with the drone HEIFU.
-    argSecredas - Activates the Secredas Usecases. (Needs extra packages secredas).
-    argUseCase - Defines witch usecase of Secredas will be loaded.
-    argPlanners - Loads the Planners nodes with static colision avoidance (Needs extra packages Planners).
-```
+## Package description
+**GCS Interface:**
+Interface for converting commands and information from and to a remote control station, respectively.
 
-------
+**Waypoint Manager:**
+Reads mission files from the UAV and sends them to the respective nodes. Allows following a mission in guided mode.
 
-**Heifu Simulation:**
+**GNSS Utils:**
+Auxiliary to the Waypoints manager package. Converts global coordinates to local coordinates.
 
-First make sure that the ArduPilot firmware is correctly installed, by following the steps described [here](https://gitlab.pdmfc.com/drones/heifu/wikis/Install-and-Configure-ArduPilot-Firmware).
+**Planners:**
+Responsible for finding a collision-free path to the desired waypoint.
 
+**Collision Avoidance:**
+Deals with the information from the perception sensors and ensures the safety of the UAV.
 
-To open the simulation:
+**Priority Manager:**
+Receives all setpoints from the respective packages. Responsible for managing the priorities of each package, sending always the command with the highest priority to the navigation controller.
 
-1st terminal - Launch Heifu_bringup
-```sh
-roslaunch heifu_bringup heifu_bringup.launch argSim:=true
-```
+**Mavros Commands:**
+Responsible for general flight commands handling, such as takeoff, land, and mode changes.
 
-2nd terminal - Launch ArduPilot firmware
-```sh
-cd ~/ardupilot/ArduCopter/
-sim_vehicle.py -v ArduCopter -f gazebo-heifu -I1
-```
-	
-	
-------
+**Navigation Controller:**
+Responsible for controlling and completing given waypoints. Can be used with position setpoints or velocity setpoints. Guarantees that the requested position is achieved. Can receive a velocity bypass setpoint.
 
-# Packages
-
-## Heifu Bringup
-Responsible for load all packages.
-
-------
-
-## Heifu Description
-This package contains the drone robot HEIFU and the worlds for the simulation.
-
-------
-
-## Heifu Diagnostic
-Responsible for verify the GPS fix state of the drone and send the information to the application.
-
-#### Subscribers: 
-
-* /diagnostics ![diagnostic_msgs/DiagnosticArray](http://docs.ros.org/melodic/api/diagnostic_msgs/html/msg/DiagnosticArray.html)
-
-#### Publishers:
-
-* /heifu/g/f/m ![std_msgs/Int8](http://docs.ros.org/melodic/api/std_msgs/html/msg/Int8.html)
-------
-
-## Heifu Interface
-This package is the bridge between the ROS and the application.
-
-#### Subscribers: 
-
-* /heifu/disarm ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/takeoff ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/land ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/mavros/local_position/pose ![geometry_msgs/PoseStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html)
-* /heifu/mavros/local_position/velocity_local ![geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)
-* /heifu/mavros/global_position/global ![sensor_msgs/NavSatFix](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/NavSatFix.html)
-* /heifu/mavros/state ![mavros_msgs/State](http://docs.ros.org/melodic/api/mavros_msgs/html/msg/State.html)
-* /heifu/c/s ![std_msgs/String](http://docs.ros.org/melodic/api/std_msgs/html/msg/String.html)
-* /heifu/mavros/battery ![sensor_msgs/BatteryState](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/BatteryState.html)
-* /heifu/mavros/global_position/raw/satellites ![std_msgs/UInt32](http://docs.ros.org/melodic/api/std_msgs/html/msg/UInt32.html)
-* /heifu/g/f/m ![std_msgs/String](http://docs.ros.org/melodic/api/std_msgs/html/msg/String.html)
-
-#### Publishers:
-
-* /warning ![std_msgs/String](http://docs.ros.org/melodic/api/std_msgs/html/msg/String.html)
-* /heifu/frontend/cmd ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/land ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/takeoff ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/mode_auto ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/rtl ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/global_setpoint_converter ![geographic_msgs/GeoPose](http://docs.ros.org/melodic/api/geographic_msgs/html/msg/GeoPose.html)
-
-#### Services: 
-
-* /heifu/mavros/mission/clear ![mavros_msgs/WaypointPush](http://docs.ros.org/melodic/api/mavros_msgs/html/msg/WaypointPush.html)
-* /heifu/mavros/set_mode ![mavros_msgs/SetMode](http://docs.ros.org/melodic/api/mavros_msgs/html/msg/SetMode.html)
-* /heifu/mavros/cmd/arming ![mavros_msgs/CommandBool](http://docs.ros.org/melodic/api/mavros_msgs/html/msg/CommandBool.html)
-------
-
-## Heifu Mavros
-This is the main package to control the drone. Responsible for message conversions and commands between the packages and the mavros node.
-
-#### Subscribers: 
-
-* /heifu/takeoff ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/land ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/disarm ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/cmd_vel ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/xbox_vel_raw ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/mavros/local_position/pose ![geometry_msgs/PoseStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html)
-* /heifu/rtl ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/land_vel_raw ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/simulation_raw ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/frontend/cmd ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/mode_auto ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/global_setpoint_converter ![geographic_msgs/GeoPose](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/GeoPose.html)
-* /heifu/mission/start ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/mission/stop ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-
-#### Publishers: 
-* /heifu/mavros/setpoint_velocity/cmd_vel ![geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)
-* /heifu/xbox_vel ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/land_vel ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/simulation ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu//g/f/m ![std_msgs/Int8](http://docs.ros.org/melodic/api/std_msgs/html/msg/Int8.html)
-* /heifu/mavros/setpoint_position/local ![geometry_msgs/PoseStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html)
-
-#### Services:
-
-* /heifu/mavros/cmd/arming ![mavros_msgs/CommandBool](http://docs.ros.org/melodic/api/mavros_msgs/html/srv/CommandBool.html)
-* /heifu/mavros/set_mode ![mavros_msgs/SetMode](http://docs.ros.org/melodic/api/mavros_msgs/html/srv/SetMode.html)
-* /heifu/mavros/takeoff ![mavros_msgs/CommandTOL](http://docs.ros.org/melodic/api/mavros_msgs/html/srv/CommandTOL.html)
-------
-
-## Heifu Msgs
-This package contain the messages and services necessary to work.
-
-------
-
-## Heifu Safety
-If loaded, this package controls the flight area and velocity limit of the drone to a safety real demonstration.
-
-#### Subscribers: 
-
-* /heifu/mavros/local_position/pose ![geometry_msgs/PoseStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html)
-* /heifu/xbox_vel ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-
-#### Publishers:
-
-* /heifu/xbox_vel_safety ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-
-#### Services:
-
-* /heifu/EnableSafetyFence ![heifu_msgs/EnableSafety](http://docs.ros.org/melodic/api/heifu_msgs/html/srv/EnableSafety.html)
-
-------
-
-## Heifu Simple Waypoint
-This package receive a setpoint and make the drone fly pointed to desired position.
-
-#### Subscribers: 
-
-* /heifu/mission/setpoint ![geometry_msgs/Pose](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Pose.html)
-* /heifu/mavros/local_position/pose ![geometry_msgs/PoseStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html)
-
-#### Publishers:
-
-* /heifu/mission/start ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/mission/stop ![std_msgs/Empty](http://docs.ros.org/melodic/api/std_msgs/html/msg/Empty.html)
-* /heifu/mavros/setpoint_position/local ![geometry_msgs/PoseStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html)
-------
-
-## Heifu Tools
-Responsible for convert the velocity command messages.
-
-#### Subscribers: 
-
-* /heifu/joy ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-
-#### Publishers:
-
-* /heifu/dummy_vel ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-* /heifu/xbox_vel_raw ![geometry_msgs/Twist](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Twist.html)
-------
+**Mavros:**
+Responsible for the comunication between ROS and the flight controller firmware. Uses the MAVlink protocol.
