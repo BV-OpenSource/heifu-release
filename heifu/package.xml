@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>heifu</name>
-  <version>0.8.1</version>
-  <description>The heifu metapackage that installs all heifu related packages.</description>
+  <version>0.8.2</version>
+  <description>The heifu metapackage that installs heifu related packages without GPU.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -14,7 +14,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>BSD</license>
+  <license>BSD-3</license>
 
 
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
@@ -50,12 +50,10 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>collision_avoidance</exec_depend>
   <exec_depend>control_bringup</exec_depend>
   <exec_depend>gcs_interface</exec_depend>
   <exec_depend>gimbal</exec_depend>
   <exec_depend>gnss_utils</exec_depend>
-  <exec_depend>gpu_voxels_ros</exec_depend>
   <exec_depend>heifu-bringup</exec_depend>
   <exec_depend>libmavconn</exec_depend>
   <exec_depend>mavros</exec_depend>
@@ -63,10 +61,7 @@
   <exec_depend>mavros_extras</exec_depend>
   <exec_depend>mavros_msgs</exec_depend>
   <exec_depend>navigation_controller</exec_depend>
-  <exec_depend>planner</exec_depend>
-  <exec_depend>planners_manager</exec_depend>
   <exec_depend>priority_manager</exec_depend>
-  <exec_depend>rrt</exec_depend>
   <exec_depend>status_diagnostic</exec_depend>
   <exec_depend>test_mavros</exec_depend>
   <exec_depend>uav_msgs</exec_depend>

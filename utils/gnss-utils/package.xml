@@ -1,31 +1,32 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gnss_utils</name>
-  <version>0.8.1</version>
+  <version>0.8.2</version>
   <description>The GNSS_utils package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="mmoreira@todo.todo">mmoreira</maintainer>
+  <maintainer email="mmoreira@beyond-vision.pt">Miguel Moreira</maintainer>
+  <maintainer email="andre.ferreira@beyond-vision.pt">André Ferreira</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>BSD-3</license>
 
 
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/gnss_utils</url> -->
+  <url type="website">http://wiki.ros.org/gnss_utils</url>
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+   <author email="mmoreira@beyond-vision.pt">Miguel Moreira</author>
 
 
   <!-- The *depend tags are used to specify dependencies -->
@@ -49,19 +50,13 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>mavros_msgs</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <build_export_depend>mavros_msgs</build_export_depend>
+
+  <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>std_srvs</depend>
+  <depend>std_msgs</depend>
+  <depend>mavros_msgs</depend>
   <depend>geographic_msgs</depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>mavros_msgs</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

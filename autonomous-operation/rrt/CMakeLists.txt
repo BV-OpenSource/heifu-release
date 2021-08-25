@@ -8,20 +8,23 @@ project(rrt)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-	geometry_msgs
-	mavros_msgs
-	planner
-	roscpp
-	tf
-	visualization_msgs
+    geometry_msgs
+    mavros_msgs
+    planner
+    roscpp
+    tf
+    visualization_msgs
+    gpu_voxels_ros
 )
 
 find_package(Eigen3 REQUIRED
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time unit_test_framework chrono)
-find_package(icl_core REQUIRED)
-find_package(gpu_voxels REQUIRED)
+find_package(icl_core REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
+find_package(gpu_voxels REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
 find_package(CUDA REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
@@ -133,18 +136,18 @@ add_definitions(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-	include
-	${catkin_INCLUDE_DIRS}
-	${Eigen_INCLUDE_DIRS}
-	${gpu_voxels_INCLUDE_DIRS}
-	${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
-	${CUDA_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${Eigen_INCLUDE_DIRS}
+    ${gpu_voxels_INCLUDE_DIRS}
+    ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+    ${CUDA_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-	 src/RRT.cpp
-	 src/RRT_tree.cpp
+     src/RRT.cpp
+     src/RRT_tree.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -156,9 +159,9 @@ add_library(${PROJECT_NAME}
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node
-	src/RRT.cpp
-	src/RRT_node.cpp
-	src/RRT_tree.cpp
+    src/RRT.cpp
+    src/RRT_node.cpp
+    src/RRT_tree.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -173,12 +176,12 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-	${catkin_LIBRARIES}
-	${Eigen_LIBRARIES}
-	${Boost_SYSTEM_LIBRARY}
-	${icl_core_LIBRARIES}
-	${gpu_voxels_LIBRARIES}
-	${CUDA_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${Eigen_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
 )
 
 #############
