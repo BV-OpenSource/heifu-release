@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>mavros_commands</name>
+    <version>0.8.1</version>
+    <description>Mavros Common Commands</description>
+
+    <author email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</author>
+
+    <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
+    <maintainer email="andre.ferreira@beyond-vision.pt">André Ferreira</maintainer>
+
+    <license>BSD</license>
+    <url>https://gitlab.pdmfc.com/drones/ros1/control/mavros-commands</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <depend>mavros</depend>
+    <depend>mavros_msgs</depend>
+    <depend>roscpp</depend>
+    <depend>std_msgs</depend>
+
+    <!-- The export tag contains other, unspecified, tags -->
+    <export>
+    <!-- Other tools can request additional information be placed here -->
+
+    </export>
+</package>
