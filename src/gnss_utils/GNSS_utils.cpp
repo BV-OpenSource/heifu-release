@@ -3,40 +3,40 @@
 void GNSS_utils::LLAtoECEF(const double Lat, const double Long, const double Alt,
                            double &ECEFX, double &ECEFY, double &ECEFZ)
 {
-  double a = WGS84_A;
-  double eccSquared = WGS84_E_SQUARE;
+    double a = WGS84_A;
+    double eccSquared = WGS84_E_SQUARE;
 
-  double LatRad = Lat*RADIANS_PER_DEGREE;
-  double LongRad = Long*RADIANS_PER_DEGREE;
+    double LatRad = Lat*RADIANS_PER_DEGREE;
+    double LongRad = Long*RADIANS_PER_DEGREE;
 
-  double N=a/sqrt(1-eccSquared*pow(sin(LatRad), 2));
-  ECEFX = (N+Alt)*cos(LatRad)*cos(LongRad);
-  ECEFY = (N+Alt)*cos(LatRad)*sin(LongRad);
-  ECEFZ = (N*(1-eccSquared) + Alt)*sin(LatRad);
+    double N=a/sqrt(1-eccSquared*pow(sin(LatRad), 2));
+    ECEFX = (N+Alt)*cos(LatRad)*cos(LongRad);
+    ECEFY = (N+Alt)*cos(LatRad)*sin(LongRad);
+    ECEFZ = (N*(1-eccSquared) + Alt)*sin(LatRad);
 
 }
 
 void GNSS_utils::ECEFtoENU(const double X, const double Y, const double Z, const double Lat0, const double Long0, const double Alt0,
                            double &xEast, double &yNorth, double &zUp)
 {
-  double X0, Y0, Z0;
-  LLAtoECEF(Lat0, Long0, Alt0, X0, Y0, Z0);
+    double X0, Y0, Z0;
+    LLAtoECEF(Lat0, Long0, Alt0, X0, Y0, Z0);
 
-  double phi = Lat0*RADIANS_PER_DEGREE;
-  double lamb = Long0*RADIANS_PER_DEGREE;
+    double phi = Lat0*RADIANS_PER_DEGREE;
+    double lamb = Long0*RADIANS_PER_DEGREE;
 
-  double sin_lambda = sin(lamb);
-  double cos_lambda = cos(lamb);
-  double sin_phi = sin(phi);
-  double cos_phi = cos(phi);
+    double sin_lambda = sin(lamb);
+    double cos_lambda = cos(lamb);
+    double sin_phi = sin(phi);
+    double cos_phi = cos(phi);
 
-  double xd = X - X0;
-  double yd = Y - Y0;
-  double zd = Z - Z0;
+    double xd = X - X0;
+    double yd = Y - Y0;
+    double zd = Z - Z0;
 
-  xEast = -sin_lambda * xd + cos_lambda * yd;
-  yNorth = -sin_phi * cos_lambda * xd - sin_phi * sin_lambda * yd + cos_phi * zd;
-  zUp = cos_phi * cos_lambda * xd + cos_phi * sin_lambda * yd + sin_phi * zd;
+    xEast = -sin_lambda * xd + cos_lambda * yd;
+    yNorth = -sin_phi * cos_lambda * xd - sin_phi * sin_lambda * yd + cos_phi * zd;
+    zUp = cos_phi * cos_lambda * xd + cos_phi * sin_lambda * yd + sin_phi * zd;
 }
 
 void GNSS_utils::LLAtoENU(const double Lat, const double Long, const double Alt, const double Lat0, const double Long0, const double Alt0,
