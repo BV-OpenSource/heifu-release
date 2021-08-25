@@ -1,3 +1,0 @@
-paramRRTStep: 1.0
-paramBiasedRRT: true
-paramBiasedRRTProb: 0.8
