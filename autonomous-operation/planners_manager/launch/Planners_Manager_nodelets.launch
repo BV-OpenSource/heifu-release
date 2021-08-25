@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- Input arguments -->
+    <arg name="argID"               default="0"/>
+    <arg name="argVehicle"          default="heifu"/>
+    <arg name="argNamespace"        default="$(arg argVehicle)$(arg argID)"/>
+	<arg name="argTargetFrame"       default="base_link"/>
+	<arg name="argSourceFrame"       default="odom"/>
+	<arg name="argNodeRate"          default="100.0"/>
+	<arg name="argPlannerType"       default="1"/>
+	<arg name="argGoalTolerance"     default="2.0"/>
+	<arg name="argRotationTolerance" default="0.35"/>
+	<arg name="argNodeletManager"    default="GPUVoxelsROS_manager_nodelet"/>
+	<arg name="argNodeletManagerHelper" default="$(eval 'Planners_Manager_manager_nodelet' if (argNodeletManager == '') else argNodeletManager)"/>
+
+	<group if="$(eval arg('argNodeletManager') == '')">
+		<node pkg="nodelet" type="nodelet" name="$(arg argNodeletManagerHelper)"  args="manager" ns="$(arg argNamespace)" output="screen">
+		</node>
+	</group>
+
+	<node pkg="nodelet" type="nodelet" name="Planners_Manager_nodelet" args="load Planners_ManagerNodelet $(arg argNodeletManagerHelper)" ns="$(arg argNamespace)" output="screen" required="true">
+		<param name="paramTargetFrame"      type="string" value="$(arg argNamespace)/$(arg argTargetFrame)"	/>
+		<param name="paramMapFrameId"       type="string" value="$(arg argNamespace)/$(arg argSourceFrame)"	/>
+
+		<param name="paramNodeRate"         type="double" value="$(arg argNodeRate)"/>
+		<param name="paramGoalTolerance"    type="double" value="$(arg argGoalTolerance)"/>
+		<param name="paramRotationTolerance"    type="double" value="$(arg argRotationTolerance)"/>
+
+		<param name="paramPlannerType"      type="int" value="$(arg argPlannerType)"/>
+
+		<rosparam param="paramRobotSize"		>[ 2.0,  2.0,  2.0]</rosparam>
+		<rosparam param="paramWorkspaceSize"	>[40.0, 40.0, 20.0]</rosparam>
+		<rosparam param="paramWorkspaceCenter"	>[ 5.0,  0.0,  5.0]</rosparam>
+
+		<rosparam file="$(find rrt)/config/params.yaml" if="$(eval arg('argPlannerType') == 1)"/>
+
+<!--		<rosparam file="$(find prm)/config/params.yaml" if="$(eval arg('argPlannerType') == 2)"/>-->
+	</node>
+
+	<node pkg="rostopic" type="rostopic" name="loop_node" args="pub -r $(arg argNodeRate) nodelet_loop std_msgs/Empty " ns="$(arg argNamespace)" output="screen"/>
+</launch>
