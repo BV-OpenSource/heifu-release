@@ -1,58 +1,61 @@
 <?xml version="1.0"?>
 <launch>
-	<!-- Input arguments -->
+    <!-- Input arguments -->
     <arg name="argID"               default="0"/>
     <arg name="argVehicle"          default="heifu"/>
     <arg name="argNamespace"        default="$(arg argVehicle)$(arg argID)"/>
     <arg name="argNodeRate"         default="100.0"/>
-	<arg name="argVoxelSize"        default="0.50"/>
-	<arg name="argErodeThreshold"   default="0.2"/>
-	<arg name="argDensityThreshold" default="20"/>
-	<arg name="argPointCloudTopic"  default="/pointcloud/depth/color/points"/>
-	<arg name="argCloudTargetFrame" default="/odom"/>
+    <arg name="argVoxelSize"        default="0.50"/>
+    <arg name="argErodeThreshold"   default="0.2"/>
+    <arg name="argDensityThreshold" default="20"/>
+    <arg name="argPointCloudTopic"  default="/pointcloud/depth/color/points"/>
+    <arg name="argCloudTargetFrame" default="/odom"/>
     <arg name="argCloudSourceFrame" default="/camera_link"/>
-	<arg name="argNodeletManager"   default=""/>
-	<arg name="argOccupancy"		default="0.5"	/>
-	<arg name="argWidth"			default="640"	/>
-	<arg name="argHeight"			default="480"	/>
-	<arg name="argHFOV"				default="1.045"	/>
-	<arg name="argVFOV"				default="0.815"	/>
-	<arg name="argProbHit"			default="0.50"	/>
-	<arg name="argProbMiss"			default="0.30"	/>
-	<arg name="argMaxRange"			default="10.0"	/>
-	<arg name="argForceRaycast"		default="true"	/>
-	<arg name="argNodeletManagerHelper" default="$(eval 'GPUVoxelsROS_manager_nodelet' if (argNodeletManager == '') else argNodeletManager)"/>
+    <!-- JETSON & REALSENSE
+    <arg name="argCloudSourceFrame" default="/pointcloud_depth_optical_frame"/>
+    -->
+    <arg name="argNodeletManager"   default=""/>
+    <arg name="argOccupancy"        default="0.5"   />
+    <arg name="argWidth"            default="640"   />
+    <arg name="argHeight"           default="480"   />
+    <arg name="argHFOV"             default="1.045" />
+    <arg name="argVFOV"             default="0.815" />
+    <arg name="argProbHit"          default="0.50"  />
+    <arg name="argProbMiss"         default="0.30"  />
+    <arg name="argMaxRange"         default="10.0"  />
+    <arg name="argForceRaycast"     default="true"  />
+    <arg name="argNodeletManagerHelper" default="$(eval 'GPUVoxelsROS_manager_nodelet' if (argNodeletManager == '') else argNodeletManager)"/>
 
-	<group if="$(eval arg('argNodeletManager') == '')">
-		<node pkg="nodelet" type="nodelet" name="$(arg argNodeletManagerHelper)"  args="manager" ns="$(arg argNamespace)" output="screen">
-			<param name="num_worker_threads" value="32" />
-		</node>
-	</group>
+    <group if="$(eval arg('argNodeletManager') == '')">
+        <node pkg="nodelet" type="nodelet" name="$(arg argNodeletManagerHelper)"  args="manager" ns="$(arg argNamespace)" output="screen">
+            <param name="num_worker_threads" value="32" />
+        </node>
+    </group>
 
-<!--	<node pkg="gpu_voxels_ros" name="deleteMap" type="RemoveOldMap.sh"/>-->
+<!--    <node pkg="gpu_voxels_ros" name="deleteMap" type="RemoveOldMap.sh"/>-->
 
-	<node pkg="nodelet" type="nodelet" name="gpu_voxels_ros_nodelet" args="load GPUVoxelsROSNodelet $(arg argNodeletManagerHelper)" ns="$(arg argNamespace)" output="screen">
-		<param name="paramNodeRate"         type="double" value="$(arg argNodeRate)"		/>
-		<param name="paramVoxelSize"         type="double" value="$(arg argVoxelSize)"		/>
-		<param name="paramErodeThreshold"         type="double" value="$(arg argErodeThreshold)"		/>
+    <node pkg="nodelet" type="nodelet" name="gpu_voxels_ros_nodelet" args="load GPUVoxelsROSNodelet $(arg argNodeletManagerHelper)" ns="$(arg argNamespace)" output="screen">
+        <param name="paramNodeRate"         type="double" value="$(arg argNodeRate)" />
+        <param name="paramVoxelSize"        type="double" value="$(arg argVoxelSize)" />
+        <param name="paramErodeThreshold"   type="double" value="$(arg argErodeThreshold)" />
 
-		<param name="paramOccupancy"		type="double" value="$(arg argOccupancy)"	/>
-		<param name="paramWidth"			type="double" value="$(arg argWidth)"	/>
-		<param name="paramHeight"			type="double" value="$(arg argHeight)"	/>
-		<param name="paramHFOV"				type="double" value="$(arg argHFOV)"	/>
-		<param name="paramVFOV"				type="double" value="$(arg argVFOV)"	/>
-		<param name="paramMaxRange"			type="double" value="$(arg argMaxRange)"	/>
-		<param name="paramProbHit"			type="double" value="$(arg argProbHit)"	/>
-		<param name="paramProbMiss"			type="double" value="$(arg argProbMiss)"	/>
+        <param name="paramOccupancy"        type="double" value="$(arg argOccupancy)" />
+        <param name="paramWidth"            type="double" value="$(arg argWidth)" />
+        <param name="paramHeight"           type="double" value="$(arg argHeight)" />
+        <param name="paramHFOV"             type="double" value="$(arg argHFOV)" />
+        <param name="paramVFOV"             type="double" value="$(arg argVFOV)" />
+        <param name="paramMaxRange"         type="double" value="$(arg argMaxRange)" />
+        <param name="paramProbHit"          type="double" value="$(arg argProbHit)" />
+        <param name="paramProbMiss"         type="double" value="$(arg argProbMiss)" />
 
-		<param name="paramForceRaycast"		type="bool" value="$(arg argForceRaycast)"	/>
+        <param name="paramForceRaycast"     type="bool" value="$(arg argForceRaycast)" />
 
-		<param name="paramDensityThreshold" type="int" value="$(arg argDensityThreshold)" />
+        <param name="paramDensityThreshold" type="int" value="$(arg argDensityThreshold)" />
 
-		<param name="paramPointCloudTopic" type="string" value="$(arg argPointCloudTopic)" />
-		<param name="paramCloudTargetFrame" type="string" value="$(arg argCloudTargetFrame)" />
-		<param name="paramCloudSourceFrame" type="string" value="$(arg argCloudSourceFrame)" />
+        <param name="paramPointCloudTopic"  type="string" value="$(arg argPointCloudTopic)" />
+        <param name="paramCloudTargetFrame" type="string" value="$(arg argCloudTargetFrame)" />
+        <param name="paramCloudSourceFrame" type="string" value="$(arg argCloudSourceFrame)" />
 
-		<rosparam param="paramMapSize">[128, 128, 64]</rosparam>
-	</node>
+        <rosparam param="paramMapSize">[128, 128, 64]</rosparam>
+    </node>
 </launch>
