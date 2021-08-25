@@ -25,7 +25,10 @@ def appendToArray(coordinateList):
 def chooseKMLFile(lat,long):
     global root
     cc = countries.CountryChecker(PROJECTPATH + '/TM_WORLD_BORDERS-0.3.shp')
-    country = cc.getCountry(countries.Point(lat, long)).iso
+    tmp_country = cc.getCountry(countries.Point(lat, long))
+    country = ''
+    if tmp_country is not None:
+        country = tmp_country.iso
     if (country == 'IT'):
         file_path = path.join(PROJECTPATH + '/itaNFZForbiddenOnly_N.kml')
     elif (country == 'PT'):

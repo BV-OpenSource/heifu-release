@@ -7,8 +7,17 @@
     <arg name="argVehicle"      default="heifu"/>
     <arg name="argNamespace"    default="$(arg argVehicle)$(arg argID)"/>
     <arg name="argEndpoint"     default="preprod"/>
+    <arg name="argCamType"      default="default"/>
+    <arg name="argEnableNFZ"    default="true"/>
+    <arg name="argJetson"       default="false"/>
 
-    <node name="gcs_interface_node" type="interface.py" pkg="gcs_interface" output="screen" args="$(arg argNamespace) $(arg argEndpoint)" respawn="true" ns="$(arg argNamespace)">
+    <arg name="argIsJetson"    default="" unless="$(eval arg('argJetson'))"/>
+    <arg name="argIsJetson"    default=" --jetson" if="$(eval arg('argJetson'))"/>
+    <arg name="argNeedsEnableNFZ"   default="" unless="$(eval arg('argEnableNFZ'))"/>
+    <arg name="argNeedsEnableNFZ"   default=" --nfz" if="$(eval arg('argEnableNFZ'))"/>
+    <arg name="argExtraArgs" default="$(arg argIsJetson)$(arg argNeedsEnableNFZ)"/>
+
+    <node name="gcs_interface_node" type="interface.py" pkg="gcs_interface" output="screen" args="-n $(arg argNamespace) -e $(arg argEndpoint) -c $(arg argCamType) $(arg argExtraArgs)" respawn="true" ns="$(arg argNamespace)">
     </node>
 </launch>
 
