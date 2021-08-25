@@ -6,10 +6,10 @@
 
 #include <std_msgs/String.h>
 
-#include <mavros_msgs/ParamSet.h>
 #include <mavros_msgs/ParamGet.h>
 #include <mavros_msgs/ParamValue.h>
 #include <mavros_msgs/ParamPull.h>
+#include <mavros_msgs/MountControl.h>
 
 #include <std_msgs/Empty.h>
 #include "gimbal/setGimbalAxes.h"
@@ -35,13 +35,14 @@ namespace GL{
             ros::Subscriber subGimbalGetAxes;
             ros::Subscriber subGimbalSetAxes;
 
+            // ROS Publishers
+            ros::Publisher pubMountControl;
+
             // ROS Service Client
-            ros::ServiceClient srvClientparamSetClient;
             ros::ServiceClient srvClientparamGetClient;
             ros::ServiceClient srvGetMavrosParam;
 
             // Message
-            mavros_msgs::ParamSet paramSetMsg;
             mavros_msgs::ParamGet paramGetMsg;
             mavros_msgs::ParamPull paramPull;
 
@@ -70,12 +71,13 @@ namespace GL{
 
             gimbal::getGimbalAxes msgGetGimbalAxes;
 
+            mavros_msgs::MountControl pubGimbalControl;
+
             // Functions
             bool isBeyondAngleMax(double value, double max);
             bool isBeyondAngleMin(double value, double max);
             void setAngleMavros(const ros::TimerEvent &);
             void getAngleGivenAxe(const gimbal::getGimbalAxes &msg);
-            bool callServiceMavros(const std::string paramId, double initialValue, double* currentAngle);
             void setAngleGivenAxe(const gimbal::setGimbalAxes &msg);
 
     };
