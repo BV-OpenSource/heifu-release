@@ -1,4 +1,0 @@
-[submodule "gpu-voxels"]
-	path = gpu-voxels
-	url = git@gitlab.pdmfc.com:drones/gpu-voxels.git
-	update = merge
