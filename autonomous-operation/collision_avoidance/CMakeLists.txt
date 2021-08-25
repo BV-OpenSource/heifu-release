@@ -13,11 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
     nodelet
     pluginlib
     roscpp
+    gpu_voxels_ros
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time unit_test_framework chrono)
-find_package(icl_core REQUIRED)
-find_package(gpu_voxels REQUIRED)
+find_package(icl_core REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
+find_package(gpu_voxels REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
 find_package(CUDA REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
@@ -111,10 +114,10 @@ find_package(orocos_kdl REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES CollisionAvoidance
-CATKIN_DEPENDS mavros_msgs roscpp uav_msgs
-#  DEPENDS system_lib
+    #  INCLUDE_DIRS include
+    #  LIBRARIES CollisionAvoidance
+    CATKIN_DEPENDS mavros_msgs roscpp uav_msgs
+    #  DEPENDS system_lib
 )
 
 ###########
@@ -122,31 +125,31 @@ CATKIN_DEPENDS mavros_msgs roscpp uav_msgs
 ###########
 
 add_definitions(
-  ${icl_core_DEFINITIONS}
-  ${gpu_voxels_DEFINITIONS}
+    ${icl_core_DEFINITIONS}
+    ${gpu_voxels_DEFINITIONS}
 )
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${gpu_voxels_INCLUDE_DIRS}
-  ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
-  ${CUDA_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${gpu_voxels_INCLUDE_DIRS}
+    ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+    ${CUDA_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-	src/CollisionAvoidance.cpp
+    src/CollisionAvoidance.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
-	${catkin_LIBRARIES}
-	${Boost_SYSTEM_LIBRARY}
-	${icl_core_LIBRARIES}
-	${gpu_voxels_LIBRARIES}
-	${CUDA_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
 )
 
 ## Add cmake target dependencies of the library
@@ -158,8 +161,8 @@ target_link_libraries(${PROJECT_NAME}
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node
-	src/CollisionAvoidance_node.cpp
-	src/CollisionAvoidance.cpp
+    src/CollisionAvoidance_node.cpp
+    src/CollisionAvoidance.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -174,21 +177,21 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
-   ${Boost_SYSTEM_LIBRARY}
-   ${icl_core_LIBRARIES}
-   ${gpu_voxels_LIBRARIES}
-   ${CUDA_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
 )
 
 add_library(${PROJECT_NAME}_nodelet src/CollisionAvoidance_nodelet.cpp)
 target_link_libraries(${PROJECT_NAME}_nodelet
-	${PROJECT_NAME}
-	${catkin_LIBRARIES}
-	${Boost_SYSTEM_LIBRARY}
-	${icl_core_LIBRARIES}
-	${gpu_voxels_LIBRARIES}
-	${CUDA_LIBRARIES})
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES})
 
 #############
 ## Install ##

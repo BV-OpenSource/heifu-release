@@ -34,11 +34,9 @@ class Gimbal:
 
     def onGimbal(self, msg):
         self.vehicle.logger.info('Gimbal %s' % str(msg))
-        conversionGimbal = geometry_msgs.msg.Twist()
-        conversionGimbal.angular.z = msg['x'] / 4.0
         gimbalControl = gimbal.msg.setGimbalAxes()
         gimbalControl.pitch = -msg['y']
-        gimbalControl.roll = 0
+        gimbalControl.roll = -msg['x']
         gimbalControl.yaw = 0
         try:
             # global gimbal_flags
@@ -49,9 +47,6 @@ class Gimbal:
             self.vehicle.pubGimbal.publish(gimbalControl)
         except Exception as e:
             self.vehicle.logger.info('Error onGimbal callback' + str(e))
-        if not conversionGimbal.angular.z == 0:
-            self.vehicle.pubCmd.publish(conversionGimbal)
-            pass
 
     def onCmd(self, msg):
         conversion = self.TwistCv(msg)

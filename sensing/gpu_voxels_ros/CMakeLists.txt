@@ -8,18 +8,20 @@ add_compile_options(-std=c++14)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-	geometry_msgs
-	pcl_ros
-	tf
-	pluginlib
-	nodelet
-)
+    geometry_msgs
+    pcl_ros
+    tf
+    pluginlib
+    nodelet
+    )
 
 ## System dependencies are found with CMake's conventions
 #SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time unit_test_framework chrono)
-find_package(icl_core REQUIRED)
-find_package(gpu_voxels REQUIRED)
+find_package(icl_core REQUIRED
+    PATHS ${CMAKE_CURRENT_SOURCE_DIR}/gpu-voxels/export/share)
+find_package(gpu_voxels REQUIRED
+    PATHS ${CMAKE_CURRENT_SOURCE_DIR}/gpu-voxels/export/share)
 find_package(CUDA REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
@@ -110,43 +112,43 @@ find_package(orocos_kdl REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-#  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS pcl_ros geometry_msgs tf
-#  DEPENDS icl_core gpu_voxels CUDA Boost
-)
+    INCLUDE_DIRS include
+    #  LIBRARIES ${PROJECT_NAME}
+    CATKIN_DEPENDS pcl_ros geometry_msgs tf
+    #  DEPENDS icl_core gpu_voxels CUDA Boost
+    )
 
 ###########
 ## Build ##
 ###########
 
 add_definitions(
-  ${icl_core_DEFINITIONS}
-  ${gpu_voxels_DEFINITIONS}
-)
+    ${icl_core_DEFINITIONS}
+    ${gpu_voxels_DEFINITIONS}
+    )
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
- ${catkin_INCLUDE_DIRS}
- ${gpu_voxels_INCLUDE_DIRS}
- ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
- ${CUDA_INCLUDE_DIRS}
-)
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${gpu_voxels_INCLUDE_DIRS}
+    ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+    ${CUDA_INCLUDE_DIRS}
+    )
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-	src/GpuVoxelsRos.cpp
-)
+    src/GpuVoxelsRos.cpp
+    )
 
 target_link_libraries(${PROJECT_NAME}
-	${catkin_LIBRARIES}
-	${Boost_SYSTEM_LIBRARY}
-	${icl_core_LIBRARIES}
-	${gpu_voxels_LIBRARIES}
-	${CUDA_LIBRARIES}
-)
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
+    )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -156,9 +158,9 @@ target_link_libraries(${PROJECT_NAME}
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node
-	src/GpuVoxelsRos.cpp
-	src/${PROJECT_NAME}_node.cpp)
+cuda_add_executable(${PROJECT_NAME}_node
+    src/GpuVoxelsRos.cpp
+    src/${PROJECT_NAME}_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -172,21 +174,21 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
-   ${Boost_SYSTEM_LIBRARY}
-   ${icl_core_LIBRARIES}
-   ${gpu_voxels_LIBRARIES}
-   ${CUDA_LIBRARIES}
-)
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
+    )
 
-add_library(${PROJECT_NAME}_nodelet src/${PROJECT_NAME}_nodelet.cpp)
+cuda_add_library(${PROJECT_NAME}_nodelet src/${PROJECT_NAME}_nodelet.cpp)
 target_link_libraries(${PROJECT_NAME}_nodelet
-	${PROJECT_NAME}
-	${catkin_LIBRARIES}
-	${Boost_SYSTEM_LIBRARY}
-	${icl_core_LIBRARIES}
-	${gpu_voxels_LIBRARIES}
-	${CUDA_LIBRARIES})
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES})
 
 #############
 ## Install ##
