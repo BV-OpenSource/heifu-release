@@ -1,0 +1,12 @@
+Source: ros-melodic-gimbal
+Section: misc
+Priority: optional
+Maintainer: André Ferreira <andre.ferreira@beyond-vision.pt>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-mavros-msgs, ros-melodic-roscpp, ros-melodic-rospy, ros-melodic-sensor-msgs, ros-melodic-std-msgs
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-melodic-gimbal
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-mavros-msgs, ros-melodic-roscpp, ros-melodic-rospy, ros-melodic-sensor-msgs, ros-melodic-std-msgs
+Description: The gimbal package
