@@ -8,14 +8,16 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-  roscpp
-  gpu_voxels_ros
-  uav_msgs
+    roscpp
+    gpu_voxels_ros
+    uav_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time unit_test_framework chrono)
-find_package(icl_core REQUIRED)
-find_package(gpu_voxels REQUIRED)
+find_package(icl_core REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
+find_package(gpu_voxels REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
 find_package(CUDA REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
@@ -109,10 +111,10 @@ find_package(orocos_kdl REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp gpu_voxels_ros uav_msgs
-#  DEPENDS
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME}
+    CATKIN_DEPENDS roscpp gpu_voxels_ros uav_msgs
+    #  DEPENDS
 )
 
 ###########
@@ -120,26 +122,26 @@ catkin_package(
 ###########
 
 add_definitions(
-  ${icl_core_DEFINITIONS}
-  ${gpu_voxels_DEFINITIONS}
+    ${icl_core_DEFINITIONS}
+    ${gpu_voxels_DEFINITIONS}
 )
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${gpu_voxels_INCLUDE_DIRS}
-  ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
-  ${CUDA_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${gpu_voxels_INCLUDE_DIRS}
+    ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+    ${CUDA_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-   src/Node.cpp
-   src/Obstacle.cpp
-   src/Planner.cpp
-   src/StateSpace.cpp
+    src/Node.cpp
+    src/Obstacle.cpp
+    src/Planner.cpp
+    src/StateSpace.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -166,11 +168,11 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
-   ${catkin_LIBRARIES}
-   ${Boost_SYSTEM_LIBRARY}
-   ${icl_core_LIBRARIES}
-   ${gpu_voxels_LIBRARIES}
-   ${CUDA_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
 )
 
 #############
