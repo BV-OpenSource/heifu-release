@@ -1,2 +1,0 @@
-# Waypoints manager
-
