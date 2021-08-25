@@ -30,7 +30,7 @@ git submodule update --init --recursive
 
 Run the script in:
 ```bash
-./control/mavros/mavros/scripts/install_geographiclib_datasets.sh
+sudo ./control/mavros/mavros/scripts/install_geographiclib_datasets.sh
 ```
 
 #### In case that GPU is **NOT** present or NOT wanted to be used:
