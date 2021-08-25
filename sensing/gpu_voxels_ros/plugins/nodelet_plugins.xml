@@ -1,0 +1,9 @@
+<library path="lib/libgpu_voxels_ros_nodelet">
+	<class name="GPUVoxelsROSNodelet"
+		type="GPUVoxelsROSNodelet::GPUVoxelsROSNodelet"
+		base_class_type="nodelet::Nodelet">
+		<description>
+			GPU Voxels ROS Nodelet
+		</description>
+	</class>
+</library>

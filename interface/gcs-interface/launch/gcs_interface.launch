@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
+
+    <!-- Input arguments -->
+    <arg name="argID"           default="0"/>
+    <arg name="argVehicle"      default="heifu"/>
+    <arg name="argNamespace"    default="$(arg argVehicle)$(arg argID)"/>
+    <arg name="argEndpoint"     default="preprod"/>
+
+    <node name="gcs_interface_node" type="interface.py" pkg="gcs_interface" output="screen" args="$(arg argNamespace) $(arg argEndpoint)" respawn="true" ns="$(arg argNamespace)">
+    </node>
+</launch>
+
