@@ -30,6 +30,7 @@ class Mission:
         return conversion, conversion.command
 
     def onGetMission(self, msg):
+        print("Mission Pull requested from beXStream")
         wp = []
         for waypoint in self.wpList.waypoints:
             jsonObject = json.dumps({
@@ -149,7 +150,7 @@ class Mission:
                         self.vehicle.logger.error('Unable to TAKEOFF')
                         return
 
-            self.vehicle.socket.emit('/mission/takeoffACK', True)
+            self.vehicle.socket.emit('/mission/takeoffACK', {'msg': True})
 
             self.vehicle.pubStartMission.publish()
             self.vehicle._state.onMission = True
@@ -190,6 +191,13 @@ class Mission:
         self.vehicle._state.onMission = True
         self.vehicle.socket.emit('/mission/resumeACK', '')
 
+    def onMissionClear(self, msg):
+        self.vehicle.logger.info('/mission/clear')
+        result = self.vehicle.srvMissionClear()
+        self.vehicle.logger.info('Clear Mission-> %s' % str(result))
+        self.vehicle.socket.emit('/mission/clearACK', result.success)
+
+
     def cbWaypointList(self, msg):
         self.wpList = mavros_msgs.msg.WaypointList()
         self.wpList = msg
@@ -197,7 +205,7 @@ class Mission:
 
     def cbWaypointReached(self, msg):
         if self.vehicle._state.onMission:
-            self.waypoint_counter = msg.wp_seq + 1 # Begins in 0
+            self.waypoint_counter = msg.wp_seq # Begins in 0
             percentage = 100.0 * \
                 (float(self.waypoint_counter) / float(self.total_waypoints_mission))
 
