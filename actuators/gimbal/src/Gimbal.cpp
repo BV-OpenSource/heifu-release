@@ -11,11 +11,12 @@ Gimbal::Gimbal():n("~") {
 
     // Service Clients
     srvClientparamGetClient = n.serviceClient < mavros_msgs::ParamGet > (ns + "/mavros/param/get");
-    srvClientparamSetClient = n.serviceClient < mavros_msgs::ParamSet > (ns + "/mavros/param/set");
-    srvGetMavrosParam = n.serviceClient < mavros_msgs::ParamSet > (ns + "/mavros/param/pull");
+
+    // Publishers
+    pubMountControl = n.advertise<mavros_msgs::MountControl>(ns + "/mavros/mount_control/command", 1);
 
     // Parameters
-    n.param<double>("paramControlHz",       paramControlHz,  1.0);
+    n.param<double>("paramControlHz",       paramControlHz,  10.0);
     n.param<double>("paramLimitRollMax",    paramLimitRollMax,  35.0);
     n.param<double>("paramLimitRollMin",    paramLimitRollMin,  -35.0);
     n.param<double>("paramLimitPitchMax",   paramLimitPitchMax, 90.0);
@@ -38,6 +39,8 @@ Gimbal::Gimbal():n("~") {
     angleXRead = false;
     angleYRead = false;
     angleZRead = false;
+
+    pubGimbalControl.mode = pubGimbalControl.MAV_MOUNT_MODE_MAVLINK_TARGETING;
 
     msgGetGimbalAxes.axe = "all";
 
@@ -66,21 +69,17 @@ void Gimbal::run(){
 }
 
 void Gimbal::setAngleMavros(const ros::TimerEvent&){
-    if( fabs(oldRollAngle - rollAngle) > DBL_EPSILON && angleXRead){
-        callServiceMavros("MNT_NEUTRAL_X", oldRollAngle, &rollAngle);
+    if( (fabs(oldRollAngle - rollAngle) > DBL_EPSILON && angleXRead) ||
+            (fabs(oldYawAngle - yawAngle) > DBL_EPSILON && angleZRead) ||
+            (fabs(oldPitchAngle - pitchAngle) > DBL_EPSILON && angleYRead)){
+        oldYawAngle = yawAngle;
         oldRollAngle = rollAngle;
-        ROS_INFO("Roll-> %f || Pitch-> %f || Yaw-> %f", rollAngle, pitchAngle, yawAngle);
-    }
-
-    if( fabs(oldPitchAngle - pitchAngle) > DBL_EPSILON && angleYRead){
-        callServiceMavros("MNT_NEUTRAL_Y", oldPitchAngle, &pitchAngle);
         oldPitchAngle = pitchAngle;
         ROS_INFO("Roll-> %f || Pitch-> %f || Yaw-> %f", rollAngle, pitchAngle, yawAngle);
-    }
-
-    if( fabs(oldYawAngle - yawAngle) > DBL_EPSILON && angleZRead){
-        callServiceMavros("MNT_NEUTRAL_Z", oldYawAngle, &yawAngle);
-        oldYawAngle = yawAngle;
+        pubGimbalControl.roll = static_cast<float>(rollAngle * 100.0);
+        pubGimbalControl.pitch = static_cast<float>(pitchAngle * 100.0);
+        pubGimbalControl.yaw = static_cast<float>(yawAngle * 100.0);
+        pubMountControl.publish(pubGimbalControl);
     }
 }
 
@@ -104,30 +103,6 @@ void Gimbal::setAngleGivenAxe(const gimbal::setGimbalAxes &msg){
         if(isBeyondAngleMax(yawAngle, paramLimitYawMax) || isBeyondAngleMin(yawAngle, paramLimitYawMin)){
             yawAngle -= msg.yaw;
         }
-    }
-}
-
-bool Gimbal::callServiceMavros(const std::string paramId, double initialValue, double* currentAngle){
-    paramSetMsg.request.param_id = paramId;
-    paramSetMsg.request.value.integer = 0;
-    paramSetMsg.request.value.real = *currentAngle;
-
-    if (srvClientparamSetClient.call(paramSetMsg) && paramSetMsg.response.success){
-        //ROS_INFO("%s value set with sucess with value %f",axes.c_str(),paramSetMsg.response.value.real);
-        return true;
-    }
-    else{
-        *currentAngle = initialValue;
-        ROS_ERROR("Something is wrong with the conection.");
-        paramPull.request.force_pull = true;
-        //TRY GET MAVROS PARAM AGAIN
-        if (srvGetMavrosParam.call(paramPull) && paramPull.response.success){
-            ROS_INFO("Mavros Param Received.");
-        }
-        else{
-            ROS_ERROR("Erro getting Mavros Param.");
-        }
-        return false;
     }
 }
 
