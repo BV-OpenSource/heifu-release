@@ -1,89 +1,46 @@
-# HEIFU Repository
+# Connect gimbal to PixHawk
 
-## Pre-requisites
-**Install ROS acording to your distribuiton:**
+First we need to connect **RX**, **TX** and **GND** serial channels to Telem2 of Pixhawk like the following image:
 
-ROS Instalation page can be found [here](http://wiki.ros.org/ROS/Installation).
+<img src="simplebgc-gimbal-pixhawk.png" width="300px" height="300px" align="center"/>
 
-**Install all dependencies:**
-```bash
-sudo apt install python-catkin-tools
-sudo apt install -y ros-$ROS_DISTRO-joy ros-$ROS_DISTRO-joy-teleop ros-$ROS_DISTRO-mavlink libgeographic-dev ros-$ROS_DISTRO-geographic-msgs gdal-bin libgdal-dev wget geographiclib-tools libgeographic-dev gstreamer1.0-tools libgstreamer1.0-dev
-wget https://gitlab.pdmfc.com/drones/ros1/heifu/-/raw/master/heifu_scripts_firmware/loader.py
-sudo cp loader.py /opt/ros/$ROS_DISTRO/lib/python2.7/dist-packages/roslaunch/
-rm loader.py
+## Setup in QGround Control
+
+Alter the following params:
+
+- MNT_TYPE = AlexMos-Serial
+- SERIAL2_PROTOCOL = AlexMos Gimbal Serial (Because we are using telem2 if it was telem1 would be SERIAL1)
+
+## Setup minimum and maximum angles:
+
+1. Roll
+	1. MNT_ANGMIN_ROL = -35
+	2. MNT_ANGMAX_ROL = 35
+2. TILT (PITCH)
+	1. MNT_ANGMIN_TILT = -90
+	2. MNT_ANGMAX_TILT = 90
+3. PAN (YAW)
+	1. MNT_ANGMIN_PAN = -180
+	2. MNT_ANGMAX_PAN = 179
+
+## Services to control gimbal via MAVROS
+
+To set value:
+
+```rosservice call /mavros/param/set```
+
+To check current param value:
+
+```rosservice call /mavros/param/get```
+
+Params id:
+```
+MNT_NEUTRAL_X #ROLL
+MNT_NEUTRAL_Y #PITCH
+MNT_NEUTRAL_Z #YAW
 ```
 
-## Installation
+## Subscribers
 
-**NOTE:** It's recommended too add a SSH key to your gitlab account.
-
-### Start by cloning
-```bash
-cd <your_workspace_path>/src
-git clone -b newVersion git@gitlab.pdmfc.com:drones/ros1/heifu-uav/heifu.git
-cd heifu
-git submodule update --init --recursive
-```
-
-### Compile your workspace
-
-Run the script in:
-```bash
-sudo ./control/mavros/mavros/scripts/install_geographiclib_datasets.sh
-```
-
-#### In case that GPU is **NOT** present or NOT wanted to be used:
--   ```bash
-    catkin config --blacklist collision_avoidance gpu_voxels_ros planner planners_manager rrt
-    ```
-
-Follow instructions on packages:
-- interface/gcs-interface
-- sensing/gpu_voxels_ros (ignore if [last step](#in-case-that-gpu-is-not-present-or-not-wanted-to-be-used) was taken)
-
-At last, compile your workspace:
-```
-catkin build
-```
-
-### Source Your Workspace:
-
-```bash
-echo 'source <your_workspace_path>/devel/setup.bash' >> ~/.bashrc
-source ~/.bashrc
-```
-
-## HELP - How to get going
-
-```bash
-roslaunch heifu-bringup heifu_bringup.launch argVehicle:="heifu" argID:=0 argSimulation:=false
-```
-
-## Package description
-**GCS Interface:**
-Interface for converting commands and information from and to a remote control station, respectively.
-
-**Waypoint Manager:**
-Reads mission files from the UAV and sends them to the respective nodes. Allows following a mission in guided mode.
-
-**GNSS Utils:**
-Auxiliary to the Waypoints manager package. Converts global coordinates to local coordinates.
-
-**Planners:**
-Responsible for finding a collision-free path to the desired waypoint.
-
-**Collision Avoidance:**
-Deals with the information from the perception sensors and ensures the safety of the UAV.
-
-**Priority Manager:**
-Receives all setpoints from the respective packages. Responsible for managing the priorities of each package, sending always the command with the highest priority to the navigation controller.
-
-**Mavros Commands:**
-Responsible for general flight commands handling, such as takeoff, land, and mode changes.
-
-**Navigation Controller:**
-Responsible for controlling and completing given waypoints. Can be used with position setpoints or velocity setpoints. Guarantees that the requested position is achieved. Can receive a velocity bypass setpoint.
-
-**Mavros:**
-Responsible for the comunication between ROS and the flight controller firmware. Uses the MAVlink protocol.
+* gimbal/getAxes [[gimbal::getGimbalAxes](msg/getGimbalAxes.msg)]
+* gimbal/setAxes [[gimbal::setGimbalAxes](msg/setGimbalAxes.msg)]
