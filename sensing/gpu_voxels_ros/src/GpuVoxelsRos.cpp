@@ -195,6 +195,10 @@ void GPUVoxelsROS::cbPointCloud(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& 
                 ROS_ERROR("NAN VALUES FOUND");
                 continue;
             }else{
+                if(calibration){
+                    horizontalFOV = std::max(double(atan2(msg->points[i].x, msg->points[i].z))*2, horizontalFOV);
+                    verticalFOV = std::max(double(atan2(msg->points[i].y, sqrt(pow(msg->points[i].z,2)+pow(msg->points[i].x,2))))*2, verticalFOV);
+                }
                 point_data.push_back(Vector3f(msg->points[i].x, msg->points[i].y, msg->points[i].z));
                 k++;
             }
