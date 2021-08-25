@@ -1,0 +1,4 @@
+python-socketio[client]~=4.4.0
+python-engineio~=3.11.2
+shapely~=1.7.1
+lxml~=4.6.3
