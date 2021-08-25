@@ -1,0 +1,28 @@
+ros-melodic-heifu (0.8.2-1bionic) bionic; urgency=high
+
+  * Merge branch 'newVersion' of gitlab.pdmfc.com:drones/ros1/heifu-uav/heifu into newVersion
+  * Fix license and maintainer/author information.
+  * Contributors: André Filipe, Fábio Azevedo
+  * Merge branch 'newVersion' of gitlab.pdmfc.com:drones/ros1/heifu-uav/heifu into newVersion
+  * Fix license and maintainer/author information.
+  * Contributors: André Filipe, Fábio Azevedo
+
+ -- André Ferreira <andre.ferreira@beyond-vision.pt>  Tue, 24 Aug 2021 23:00:00 -0000
+
+ros-melodic-heifu (0.8.1-1bionic) bionic; urgency=high
+
+
+
+ -- André Ferreira <andre.ferreira@beyond-vision.pt>  Tue, 06 Jul 2021 23:00:00 -0000
+
+ros-melodic-heifu (0.7.7-1bionic) bionic; urgency=high
+
+  * Update Changelogs after merge!
+  * Add heifu metapackage.
+  * Contributors: André Filipe
+  * Add heifu metapackage.
+  * Contributors: André Filipe
+
+ -- André Ferreira <andre.ferreira@beyond-vision.pt>  Thu, 31 Dec 2020 00:00:00 -0000
+
+
