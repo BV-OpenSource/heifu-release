@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+    <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
+
+    <!-- Input arguments -->
+    <arg name="argID"        default="0"/>
+    <arg name="argVehicle"   default="heifu"/>
+    <arg name="argNamespace" default="$(arg argVehicle)$(arg argID)"/>
+
+    <arg name="argSubTopicArm"          default="/arm"/>
+    <arg name="argSubTopicAutoMode"     default="/mode_auto"/>
+    <arg name="argSubTopicBrakeMode"    default="/mode_brake"/>
+    <arg name="argSubTopicDisarm"       default="/disarm"/>
+    <arg name="argSubTopicGuidedMode"   default="/mode_guided"/>
+    <arg name="argSubTopicMissionStart" default="/mission/start"/>
+    <arg name="argSubTopicMissionStop"  default="/mission/stop"/>
+    <arg name="argSubTopicLand"         default="/land"/>
+    <arg name="argSubTopicLoiter"       default="/loiter"/>
+    <arg name="argSubTopicRTL"          default="/rtl"/>
+    <arg name="argSubTopicTakeoff"      default="/takeoff"/>
+    <arg name="argSubTopicUAVPose"      default="/mavros/local_position/pose"/>
+
+    <arg name="argPubTopicDiagLand"    default="/diagnostic/land"/>
+    <arg name="argPubTopicDiagTakeoff" default="/diagnostic/takeoff"/>
+
+    <arg name="argNodeRate"         default="100.0"/>
+    <arg name="argTakeOffAltitude"  default="5.0"/>
+    <arg name="argTakeOffThreshold" default="0.3"/>
+
+    <!-- Launch mavros node -->
+    <node name="mavros_commands_node" type="mavros_commands_node" pkg="mavros_commands" output="screen" ns="$(arg argNamespace)" respawn="true">
+        <param name="paramNodeRate"         type="double" value="$(arg argNodeRate)" />
+        <param name="paramTakeOffAltitude"  type="double" value="$(arg argTakeOffAltitude)" />
+        <param name="paramTakeOffThreshold" type="double" value="$(arg argTakeOffThreshold)" />
+
+        <param name="paramSubTopicArm"          type="string" value="$(arg argSubTopicArm)" />
+        <param name="paramSubTopicAutoMode"     type="string" value="$(arg argSubTopicAutoMode)" />
+        <param name="paramSubTopicBrakeMode"    type="string" value="$(arg argSubTopicBrakeMode)" />
+        <param name="paramSubTopicDisarm"       type="string" value="$(arg argSubTopicDisarm)" />
+        <param name="paramSubTopicGuidedMode"   type="string" value="$(arg argSubTopicGuidedMode)" />
+        <param name="paramSubTopicMissionStart" type="string" value="$(arg argSubTopicMissionStart)" />
+        <param name="paramSubTopicMissionStop"  type="string" value="$(arg argSubTopicMissionStop)" />
+        <param name="paramSubTopicLand"         type="string" value="$(arg argSubTopicLand)" />
+        <param name="paramSubTopicLoiter"       type="string" value="$(arg argSubTopicLoiter)" />
+        <param name="paramSubTopicRTL"          type="string" value="$(arg argSubTopicRTL)" />
+        <param name="paramSubTopicTakeoff"      type="string" value="$(arg argSubTopicTakeoff)" />
+        <param name="paramSubTopicUAVPose"      type="string" value="$(arg argSubTopicUAVPose)" />
+
+        <param name="paramPubTopicDiagLand"    type="string" value="$(arg argPubTopicDiagLand)" />
+        <param name="paramPubTopicDiagTakeoff" type="string" value="$(arg argPubTopicDiagTakeoff)" />
+    </node>
+
+</launch>
