@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>waypoints_manager</name>
-    <version>0.8.1</version>
+    <version>0.8.2</version>
     <description>The Waypoints Manager package</description>
     <author email="tiago.s.fernandes@beyond-vision.pt">Tiago Fernandes</author>
     <maintainer email="rmendes@beyond-vision.pt">Rui Mendes</maintainer>
-    <license>BSD</license>
+    <license>BSD-3</license>
 
     <buildtool_depend>catkin</buildtool_depend>
 
