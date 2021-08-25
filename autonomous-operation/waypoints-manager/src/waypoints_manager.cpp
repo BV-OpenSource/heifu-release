@@ -187,7 +187,7 @@ void Waypoints_Manager::pubWaypoint(const mavros_msgs::Waypoint::_frame_type fra
             pubPoseCommandLLA.publish(msg);
             break;
         case FRAME_LOCAL_ENU:
-            ENUPoint.type = uav_msgs::UAVWaypoint::TYPE_POSITION_YAW_WP;
+            ENUPoint.type = uav_msgs::UAVWaypoint::TYPE_VELOCITY_YAW_WP;
             ENUPoint.frame = FRAME_LOCAL_NED;
             ENUPoint.radius = waypointRadius;
             ENUPoint.x = static_cast<float>(x);
@@ -236,7 +236,7 @@ void Waypoints_Manager::cbConvertedCoordinates(const geometry_msgs::PointStamped
         case WAYPOINT:
         case VTOL_TAKEOFF:
             convertedPoint.radius = waypointRadius;
-            convertedPoint.type = uav_msgs::UAVWaypoint::TYPE_POSITION_YAW_WP;
+            convertedPoint.type = uav_msgs::UAVWaypoint::TYPE_VELOCITY_YAW_WP;
             break;
         case LOITER:
             convertedPoint.radius = loiterRadius;
