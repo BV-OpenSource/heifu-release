@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Input arguments -->
+    <arg name="argID"        default="0"/>
+    <arg name="argVehicle"   default="heifu"/>
+    <arg name="argNamespace" default="$(arg argVehicle)$(arg argID)"/>
+
+    <arg name="argDiagnosticRate"  default="5.0"/>
+    <arg name="argDiagBatteryRate" default="1.0"/>
+
+    <arg name="argSubTopicDiagnostic" default="/diagnostics"/>
+    <arg name="argSubTopicBattery"    default="/mavros/battery"/>
+
+    <arg name="argPubTopicGPSFixType"       default="/g/f/m"/>
+    <arg name="argPubTopicVehicleType"      default="/vehicle/type"/>
+    <arg name="argPubTopicAutoPilotType"    default="/vehicle/autopilotType"/>
+    <arg name="argPubTopicBattery"          default="/battery"/>
+
+    <!-- Launch Diagnostic node -->
+    <node name="status_diagnostic_node" type="status_diagnostic_node" pkg="status_diagnostic" output="screen" ns="$(arg argNamespace)" respawn="true">
+        <param name="paramNodeRate"                 type="double" value="$(arg argDiagnosticRate)"     />
+        <param name="paramSubTopicDiagnostic"       type="string" value="$(arg argSubTopicDiagnostic)" />
+        <param name="paramPubTopicGPSFixType"       type="string" value="$(arg argPubTopicGPSFixType)" />
+        <param name="paramPubTopicVehicleType"      type="string" value="$(arg argPubTopicVehicleType)" />
+        <param name="paramPubTopicAutoPilotType"    type="string" value="$(arg argPubTopicAutoPilotType)" />
+    </node>
+
+    <!-- Launch Throttle of battery node -->
+    <node name="battery_diagnostic_node" type="throttle" pkg="topic_tools" args="messages
+                                                                                             /$(arg argNamespace)$(arg argSubTopicBattery)
+                                                                                             $(arg argDiagBatteryRate)
+                                                                                             /$(arg argNamespace)$(arg argPubTopicBattery)"
+                                                                                             ns="$(arg argNamespace)"/>
+</launch>
