@@ -14,9 +14,10 @@ BACKEND_LIST = {'preprod': 'https://beyond-skyline-backend.preprod.pdmfc.com',
                'prod': 'https://beyond-skyline.com',
                'local': 'http://127.0.0.1:3000', 
                'graca': 'http://85.242.57.8:3000',
-               'newpreprod': 'https://bexstream-preprod.beyond-vision.pt'}
+               'newpreprod': 'https://bexstream-preprod.beyond-vision.pt',
+               'localdocker': 'http://172.17.0.1:3000'}
 JANUS_LIST = {'preprod': 'janus.preprod.pdmfc.com', 'qa': 'janus.qa.pdmfc.com', 'local': '127.0.0.1',
-             'prod': '213.63.138.90', 'graca': '85.242.57.8', 'newpreprod':'213.63.130.233'}
+             'prod': '213.63.138.90', 'graca': '85.242.57.8', 'newpreprod':'213.63.130.233', 'localdocker': '172.17.0.1'}
 
 URL = BACKEND_LIST[ENDPOINT] + API_VERSION
 URL_WS = BACKEND_LIST[ENDPOINT] + API_VERSION
