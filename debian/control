@@ -1,0 +1,12 @@
+Source: ros-melodic-heifu-gpu
+Section: misc
+Priority: optional
+Maintainer: André Ferreira <andre.ferreira@beyond-vision.pt>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin
+Homepage: http://wiki.ros.org/heifu-gpu
+Standards-Version: 3.9.2
+
+Package: ros-melodic-heifu-gpu
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-collision-avoidance, ros-melodic-gpu-voxels-ros, ros-melodic-heifu, ros-melodic-planner, ros-melodic-planners-manager, ros-melodic-rrt
+Description: The heifu metapackage that installs all heifu packages including the ones with GPU.
