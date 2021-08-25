@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- Input arguments -->
+	<arg name="argID"               default="0"/>
+    <arg name="argVehicle"          default="heifu"/>
+	<arg name="argNodeRate"         default="100.0"/>
+    <arg name="argNamespace"        default="$(arg argVehicle)$(arg argID)"/>
+    <arg name="argTopic"            default="planners/setpoint"/>
+
+	<!-- Launch mavros node -->
+    <node name="LLA2ENU_MavROS_node" type="LLA2ENU_MavROS_node" pkg="gnss_utils" output="screen" required="true" ns="$(arg argNamespace)">
+<!--        <param name="paramHomeTopic" type="string" value="/$(arg argNamespace)/mavros/home_position/home" />-->
+        <param name="paramConverted" type="string" value="/$(arg argTopic)" />
+        <param name="paramGoalCoord" type="string" value="/gnss_utils/goal_coordinates" />
+	</node>
+</launch>
