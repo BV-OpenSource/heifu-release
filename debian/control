@@ -1,0 +1,12 @@
+Source: ros-melodic-gnss-utils
+Section: misc
+Priority: optional
+Maintainer: Miguel Moreira <mmoreira@beyond-vision.pt>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-geographic-msgs, ros-melodic-mavros-msgs, ros-melodic-roscpp, ros-melodic-rospy, ros-melodic-std-msgs, ros-melodic-std-srvs
+Homepage: http://wiki.ros.org/gnss_utils
+Standards-Version: 3.9.2
+
+Package: ros-melodic-gnss-utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-geographic-msgs, ros-melodic-mavros-msgs, ros-melodic-roscpp, ros-melodic-rospy, ros-melodic-std-msgs, ros-melodic-std-srvs
+Description: The GNSS_utils package
