@@ -24,7 +24,7 @@
     </include>
 
     <!-- Launch mavros node -->
-    <include file="$(find mavros)/launch/apm.launch">
+    <include file="$(find control_bringup)/launch/apm.launch">
         <arg name="argNamespace"   value="$(arg argNamespace)"/>
         <arg name="fcu_url"        value="$(arg argFCUURL)" />
 <!--        <arg name="gcs_url"        value="$(arg argGCSURL)" />-->
