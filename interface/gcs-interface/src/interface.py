@@ -8,6 +8,7 @@ import requests
 import socketio
 import time
 import subprocess
+import argparse
 
 import sys
 from os import path
@@ -20,15 +21,28 @@ uav_interface = __import__(configs.MODULE_NAME)
 
 print("ARGS", sys.argv)
 
-if (len(sys.argv)>3): ## roslaunch adds 2 arguments
-    ROSNAME = sys.argv[1]
-    configname = '-' + ROSNAME
-    configs.URL = configs.BACKEND_LIST[sys.argv[2]] + configs.API_VERSION
-    configs.URL_WS = configs.BACKEND_LIST[sys.argv[2]] + configs.API_VERSION
-    configs.JANUS_IP = configs.JANUS_LIST[sys.argv[2]]
-else:
-    ROSNAME = 'heifu0'
-    configname = ''
+# Argument parser
+parser = argparse.ArgumentParser(description='Arguments for GCS interface.')
+parser.add_argument("-n", "--name",     type=str,   default='heifu0',            help='Namespace')
+parser.add_argument("-e", "--endpoint", type=str,   default='preprod',           help='Endpoint')
+parser.add_argument("-c", "--camtype",  type=str,   default='default',           help='Endpoint')
+parser.add_argument(      "--jetson",   action="store_true", help='Working on Jetson.')
+parser.add_argument(      "--nfz",      action="store_true", help='Enable No-Fly Zones.')
+parser.add_argument("-v", "--version",  help="show program version",             action="store_true")
+args = parser.parse_known_args()[0]
+
+if args.version:
+    print("Version 0.8.")
+    exit()
+
+ROSNAME = args.name
+configname = '-' + ROSNAME
+configs.URL = configs.BACKEND_LIST[args.endpoint] + configs.API_VERSION
+configs.URL_WS = configs.BACKEND_LIST[args.endpoint] + configs.API_VERSION
+configs.JANUS_IP = configs.JANUS_LIST[args.endpoint]
+configs.ENABLE_NFZ = args.nfz
+configs.JETSON = args.jetson
+configs.CAM_TYPE = args.camtype
 
 class SIO:
     def __init__(self, socket, ID):
@@ -48,6 +62,7 @@ class SIO:
         self.sio.on(ID + '/mission/push', self.onPush)
         self.sio.on(ID + '/mission/start', self.onMissionStart)
         self.sio.on(ID + '/mission/stop', self.onMissionCancel)
+        self.sio.on(ID + '/mission/clear', self.onMissionClear)
         self.sio.on(ID + '/mission/resume', self.onMissionResume)
         self.sio.on(ID + '/frontend/rtl', self.onRlt)
         self.sio.on(ID + '/frontend/setpoint', self.onSetpoint)
@@ -135,7 +150,7 @@ class SIO:
                     "gazebo": "gst-launch-1.0 -v v4l2src device=/dev/video9 ! video/x-raw,framerate=30/1,width=640,height=480 ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency bitrate=8192 \
                         ! \"video/x-h264,profile=baseline\" ! rtph264pay mtu=1300 ! multiudpsink clients=127.0.0.1:5000," + configs.JANUS_IP + ":" + str(msg) + " sync=false async=false",
                     "gazebo_integrated": "gst-launch-1.0  -v udpsrc port=5700 \
-                                         ! multiudpsink clients=127.0.0.1:5000," + configs.JANUS_IP + ":" + str(msg) + "sync=false"
+                                         ! multiudpsink clients=127.0.0.1:5000," + configs.JANUS_IP + ":" + str(msg) + " sync=false"
                 }
         # Remove uppercase and spaces        
         cam_type = configs.CAM_TYPE.replace(' ', '').lower()
@@ -185,6 +200,9 @@ class SIO:
 
     def onMissionResume(self, msg):
         self.ros_interface._mission.onMissionResume(msg)
+
+    def onMissionClear(self, msg):
+        self.ros_interface._mission.onMissionClear(msg)
 
     def onRlt(self, msg):
         self.ros_interface._rtl.onRlt(msg)
