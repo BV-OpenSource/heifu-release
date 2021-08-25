@@ -10,19 +10,22 @@ set(CMAKE_BUILD_TYPE Debug)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  planner
-  rrt
-#  prm
-  pluginlib
-  nodelet
+    roscpp
+    planner
+    rrt
+#    prm
+    pluginlib
+    nodelet
+    gpu_voxels_ros
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time unit_test_framework chrono)
-find_package(icl_core REQUIRED)
-find_package(gpu_voxels REQUIRED)
+find_package(icl_core REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
+find_package(gpu_voxels REQUIRED
+    PATHS ${gpu_voxels_ros_SOURCE_PREFIX}/gpu-voxels/export/share)
 find_package(CUDA REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
@@ -112,28 +115,28 @@ find_package(orocos_kdl REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-#  CATKIN_DEPENDS roscpp
-#  DEPENDS system_lib
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME}
+#    CATKIN_DEPENDS roscpp
+#    DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
 add_definitions(
-  ${icl_core_DEFINITIONS}
-  ${gpu_voxels_DEFINITIONS}
+    ${icl_core_DEFINITIONS}
+    ${gpu_voxels_DEFINITIONS}
 )
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${gpu_voxels_INCLUDE_DIRS}
-  ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
-  ${CUDA_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${gpu_voxels_INCLUDE_DIRS}
+    ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+    ${CUDA_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -173,11 +176,11 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
-   ${Boost_SYSTEM_LIBRARY}
-   ${icl_core_LIBRARIES}
-   ${gpu_voxels_LIBRARIES}
-   ${CUDA_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
+    ${icl_core_LIBRARIES}
+    ${gpu_voxels_LIBRARIES}
+    ${CUDA_LIBRARIES}
 )
 
 add_library(${PROJECT_NAME}_nodelet src/Planners_Manager_nodelet.cpp)
