@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>waypoints_manager</name>
+    <version>0.8.1</version>
+    <description>The Waypoints Manager package</description>
+    <author email="tiago.s.fernandes@beyond-vision.pt">Tiago Fernandes</author>
+    <maintainer email="rmendes@beyond-vision.pt">Rui Mendes</maintainer>
+    <license>BSD</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>geometry_msgs</depend>
+    <depend>gnss_utils</depend>
+    <depend>uav_msgs</depend>
+    <depend>mavros</depend>
+    <depend>mavros_commands</depend>
+    <depend>mavros_msgs</depend>
+    <depend>roscpp</depend>
+    <depend>sensor_msgs</depend>
+    <depend>std_msgs</depend>
+
+    <export></export>
+</package>
