@@ -1,61 +1,89 @@
-# GPU Voxels ROS
+# HEIFU Repository
 
-ROS package to integrate the library [GPU Voxels](https://github.com/fzi-forschungszentrum-informatik/gpu-voxels)
+## Pre-requisites
+**Install ROS acording to your distribuiton:**
 
-## Building the Library
+ROS Instalation page can be found [here](http://wiki.ros.org/ROS/Installation).
 
-To initialize, fetch and checkout any nested submodules, you can use the foolproof command.
-
+**Install all dependencies:**
 ```bash
+sudo apt install python-catkin-tools
+sudo apt install -y ros-$ROS_DISTRO-joy ros-$ROS_DISTRO-joy-teleop ros-$ROS_DISTRO-mavlink libgeographic-dev ros-$ROS_DISTRO-geographic-msgs gdal-bin libgdal-dev wget geographiclib-tools libgeographic-dev gstreamer1.0-tools libgstreamer1.0-dev
+wget https://gitlab.pdmfc.com/drones/ros1/heifu/-/raw/master/heifu_scripts_firmware/loader.py
+sudo cp loader.py /opt/ros/$ROS_DISTRO/lib/python2.7/dist-packages/roslaunch/
+rm loader.py
+```
+
+## Installation
+
+**NOTE:** It's recommended too add a SSH key to your gitlab account.
+
+### Start by cloning
+```bash
+cd <your_workspace_path>/src
+git clone -b newVersion git@gitlab.pdmfc.com:drones/ros1/heifu-uav/heifu.git
+cd heifu
 git submodule update --init --recursive
-cd gpu-voxels
 ```
 
-Install the [library dependencies](https://github.com/fzi-forschungszentrum-informatik/gpu-voxels#install-dependencies).
+### Compile your workspace
 
-Follow the following commands instead to compiling:
+Run the script in:
+```bash
+sudo ./control/mavros/mavros/scripts/install_geographiclib_datasets.sh
+```
+
+#### In case that GPU is **NOT** present or NOT wanted to be used:
+-   ```bash
+    catkin config --blacklist collision_avoidance gpu_voxels_ros planner planners_manager rrt
+    ```
+
+Follow instructions on packages:
+- interface/gcs-interface
+- sensing/gpu_voxels_ros (ignore if [last step](#in-case-that-gpu-is-not-present-or-not-wanted-to-be-used) was taken)
+
+At last, compile your workspace:
+```
+catkin build
+```
+
+### Source Your Workspace:
 
 ```bash
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../export -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCUDA_TOOLKIT_INCLUDE=/usr/local/cuda-10.2/include -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.2
-make install
+echo 'source <your_workspace_path>/devel/setup.bash' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-Then add the follow to the ~/.bashrc file to update the environment variables.
+## HELP - How to get going
 
 ```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(rospack find gpu_voxels_ros)/gpu-voxels/export/lib
-export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$(rospack find gpu_voxels_ros)/gpu-voxels/export/share
+roslaunch heifu-bringup heifu_bringup.launch argVehicle:="heifu" argID:=0 argSimulation:=false
 ```
 
-Source the file `source ~/.bashrc` or close and reopen the terminal.
+## Package description
+**GCS Interface:**
+Interface for converting commands and information from and to a remote control station, respectively.
 
-Proceed with the normal ROS package compilation.
+**Waypoint Manager:**
+Reads mission files from the UAV and sends them to the respective nodes. Allows following a mission in guided mode.
 
-## Dependencies:
+**GNSS Utils:**
+Auxiliary to the Waypoints manager package. Converts global coordinates to local coordinates.
 
-* [tf](http://wiki.ros.org/tf)
-* [roscpp](http://wiki.ros.org/roscpp)
-* [pcl_ros](http://wiki.ros.org/pcl_ros)
-* [nodelet](http://wiki.ros.org/nodelet)
-* [pluginlib](http://wiki.ros.org/pluginlib)
-* [geometry_msgs](http://wiki.ros.org/geometry_msgs)
-* CUDA 7.5, 8.0, 9.x, 10.0 or 10.2
-* PCL
-* OpenNI
-* Boost
-* TinyXML (libtinyxml-dev)
+**Planners:**
+Responsible for finding a collision-free path to the desired waypoint.
 
-##  Publishers:
+**Collision Avoidance:**
+Deals with the information from the perception sensors and ensures the safety of the UAV.
 
-* GPU_Voxels/map  [[std_msgs/UInt64](http://docs.ros.org/en/melodic/api/std_msgs/html/msg/UInt64.html)]
-* GPU_Voxels/PCD [[sensor_msgs/PointCloud2](http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/PointCloud2.html)]
-* GPU_Voxels/offset  [[geometry_msgs/PointStamped](http://docs.ros.org/en/melodic/api/geometry_msgs/html/msg/PointStamped.html)]
-* GPU_Voxels/MutexMap  [[std_msgs/UInt64](http://docs.ros.org/en/melodic/api/std_msgs/html/msg/UInt64.html)]
+**Priority Manager:**
+Receives all setpoints from the respective packages. Responsible for managing the priorities of each package, sending always the command with the highest priority to the navigation controller.
 
-##  Subscribers:
+**Mavros Commands:**
+Responsible for general flight commands handling, such as takeoff, land, and mode changes.
 
-* GPU_Voxels/pcdCalib  [[std_msgs/Empty](http://docs.ros.org/en/melodic/api/std_msgs/html/msg/Empty.html)]
-* GPU_Voxels/cleanMap [[std_msgs/Empty](http://docs.ros.org/en/melodic/api/std_msgs/html/msg/Empty.html)]
-* pointcloud/depth/color/points [[sensor_msgs/PointCloud2](http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/PointCloud2.html)]
+**Navigation Controller:**
+Responsible for controlling and completing given waypoints. Can be used with position setpoints or velocity setpoints. Guarantees that the requested position is achieved. Can receive a velocity bypass setpoint.
+
+**Mavros:**
+Responsible for the comunication between ROS and the flight controller firmware. Uses the MAVlink protocol.
