@@ -86,23 +86,20 @@ void Gimbal::setAngleMavros(const ros::TimerEvent&){
 void Gimbal::setAngleGivenAxe(const gimbal::setGimbalAxes &msg){
     if( msg.roll != 0.0 && angleXRead){
         rollAngle += msg.roll;
-        if(isBeyondAngleMax(rollAngle, paramLimitRollMax) || isBeyondAngleMin(rollAngle, paramLimitRollMin)){
-            rollAngle -= msg.roll;
-        }
+        isBeyondAngleMax(rollAngle, paramLimitRollMax);
+        isBeyondAngleMin(rollAngle, paramLimitRollMin);
     }
 
     if( msg.pitch != 0.0 && angleYRead){
         pitchAngle += msg.pitch;
-        if(isBeyondAngleMax(pitchAngle, paramLimitPitchMax) || isBeyondAngleMin(pitchAngle, paramLimitPitchMin)){
-            pitchAngle -= msg.pitch;
-        }
+        isBeyondAngleMax(pitchAngle, paramLimitPitchMax);
+        isBeyondAngleMin(pitchAngle, paramLimitPitchMin);
     }
 
     if( msg.yaw != 0.0 && angleZRead){
         yawAngle += msg.yaw;
-        if(isBeyondAngleMax(yawAngle, paramLimitYawMax) || isBeyondAngleMin(yawAngle, paramLimitYawMin)){
-            yawAngle -= msg.yaw;
-        }
+        isBeyondAngleMax(yawAngle, paramLimitYawMax);
+        isBeyondAngleMin(yawAngle, paramLimitYawMin);
     }
 }
 
@@ -163,10 +160,18 @@ void Gimbal::getAngleGivenAxe(const gimbal::getGimbalAxes &msg){
     }
 }
 
-bool Gimbal::isBeyondAngleMax(double value, double max){
-    return value > max;
+bool Gimbal::isBeyondAngleMax(double &value, double max){
+    bool output = value > max;
+    if(output){
+        value = max;
+    }
+    return output;
 }
 
-bool Gimbal::isBeyondAngleMin(double value, double min){
-    return value < min;
+bool Gimbal::isBeyondAngleMin(double &value, double min){
+    bool output = value < min;
+    if(output){
+        value = min;
+    }
+    return output;
 }

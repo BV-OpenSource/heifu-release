@@ -5,7 +5,7 @@
 	<arg name="argNodeRate"         default="100.0"/>
 	<arg name="argNamespace"        default="heifu$(arg argID)"/>
 	<arg name="argVehicle"          default="$(arg argNamespace)"/>
-	<arg name="argSafetyDistance"   default="1.0"/>
+    <arg name="argSafetyDistance"   default="1.0"/>
 
 	<node name="CollisionAvoidance" type="collision_avoidance_node" pkg="collision_avoidance" output="screen" required="true" ns="$(arg argNamespace)">
 		<param name="paramNodeRate"         type="double" value="$(arg argNodeRate)"		/>
