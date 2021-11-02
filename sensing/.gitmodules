@@ -1,3 +1,0 @@
-[submodule "gpu_voxels_ros"]
-	path = gpu_voxels_ros
-	url = git@gitlab.pdmfc.com:drones/ros1/sensors/gpu_voxels_ros.git
