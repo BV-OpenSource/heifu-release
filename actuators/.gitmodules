@@ -1,0 +1,3 @@
+[submodule "gimbal"]
+	path = gimbal
+	url = git@gitlab.pdmfc.com:drones/ros1/gimbals/arrishobby-zhaoyun.git
