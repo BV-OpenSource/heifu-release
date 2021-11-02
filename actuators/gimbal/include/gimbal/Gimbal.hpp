@@ -74,8 +74,8 @@ namespace GL{
             mavros_msgs::MountControl pubGimbalControl;
 
             // Functions
-            bool isBeyondAngleMax(double value, double max);
-            bool isBeyondAngleMin(double value, double max);
+            bool isBeyondAngleMax(double &value, double max);
+            bool isBeyondAngleMin(double &value, double max);
             void setAngleMavros(const ros::TimerEvent &);
             void getAngleGivenAxe(const gimbal::getGimbalAxes &msg);
             void setAngleGivenAxe(const gimbal::setGimbalAxes &msg);

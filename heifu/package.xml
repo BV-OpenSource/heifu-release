@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>heifu</name>
-  <version>0.8.2</version>
+  <version>0.8.3</version>
   <description>The heifu metapackage that installs heifu related packages without GPU.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
