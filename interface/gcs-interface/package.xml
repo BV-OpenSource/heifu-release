@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>gcs_interface</name>
-    <version>0.8.2</version>
+    <version>0.8.3</version>
     <description>Ground Control Station Interface</description>
 
     <author email="ricardo.martins@beyond-vision.pt">Ricardo Sacoto Martins</author>

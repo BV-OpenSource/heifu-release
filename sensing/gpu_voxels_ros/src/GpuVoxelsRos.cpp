@@ -38,7 +38,7 @@ GPUVoxelsROS::GPUVoxelsROS(const ros::NodeHandle private_nh_, const ros::NodeHan
     pubPCD = shm_nh.advertise<sensor_msgs::PointCloud2>("GPU_Voxels/PCD",10);
     pubMutex = shm_nh.advertise<std_msgs::UInt64>("GPU_Voxels/MutexMap", 10);
 
-    paramCloudSourceFrame = ns + paramCloudSourceFrame;
+//    paramCloudSourceFrame = ns + paramCloudSourceFrame;
     paramCloudTargetFrame = ns + paramCloudTargetFrame;
 
     paramDensityThreshold *= 4*pow(paramVoxelSize,3);
@@ -137,6 +137,8 @@ void GPUVoxelsROS::Setup(){
 
 void GPUVoxelsROS::cbCalib(const std_msgs::Empty ){
     calibration = true;
+    horizontalFOV = 0.0;
+    verticalFOV = 0.0;
 }
 
 void GPUVoxelsROS::cbCleanMap(const std_msgs::Empty ){
@@ -149,6 +151,11 @@ void GPUVoxelsROS::cbCleanMap(const std_msgs::Empty ){
     erodeTempVoxmap1->clearMap();
 
     lock.unlock();
+
+    new_data_received = true;
+    std::vector<Vector3f> emptyData;
+    my_point_cloud.update(emptyData);
+    Run();
 }
 
 /**
@@ -223,8 +230,8 @@ void GPUVoxelsROS::cbPointCloud(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& 
     }
     calibration = false;
 
-    point_data.resize(k+1);
-    emptyData.resize(l+1);
+    point_data.resize(k);
+    emptyData.resize(l);
 
     //my_point_cloud.add(point_data);
     my_point_cloud.update(point_data);
@@ -253,22 +260,26 @@ void GPUVoxelsROS::cbPointCloud(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& 
     sensorPosition = Vector3f(t.getX(), t.getY(), t.getZ());
     Vector3f dPosition = (sensorPosition + mapOffset - mapRealDimensions/2);
 
-    bool new_offset = false;
-    if(fabs(dPosition.x) > 0.3*mapRealDimensions.x){
+    bool new_offset, offsetX, offsetY, offsetZ;
+    new_offset = offsetX = offsetY = offsetZ = false;
+    if(fabs(dPosition.x) > 0.16*mapRealDimensions.x){
+        offsetX = true;
         new_offset = true;
     }
-    if(fabs(dPosition.y) > 0.3*mapRealDimensions.y){
+    if(fabs(dPosition.y) > 0.16*mapRealDimensions.y){
+        offsetY = true;
         new_offset = true;
     }
-    if(fabs(dPosition.z) > 0.3*mapRealDimensions.z){
+    if(fabs(dPosition.z) > 0.16*mapRealDimensions.z){
+        offsetZ = true;
         new_offset = true;
     }
 
     if (new_offset)
     {
-        MoveMap(Vector3f(-dPosition.x * (fabs(dPosition.x) > 0.3*mapRealDimensions.x),
-                         -dPosition.y * (fabs(dPosition.y) > 0.3*mapRealDimensions.y),
-                         -dPosition.z * (fabs(dPosition.z) > 0.3*mapRealDimensions.z)));
+        MoveMap(Vector3f(-dPosition.x * (offsetX),
+                         -dPosition.y * (offsetY),
+                         -dPosition.z * (offsetZ)));
 
         mapOffsetPub.point.x = mapOffset.x;
         mapOffsetPub.point.y = mapOffset.y;
@@ -282,7 +293,9 @@ void GPUVoxelsROS::cbPointCloud(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& 
 
     tf = Matrix4f::createFromRotationAndTranslation(Matrix3f::createFromRPY(roll, pitch, yaw), sensorPosition);
 
-    my_point_cloud.transformSelf(&tf);
+    if(my_point_cloud.getPointCloudSize() > 0){
+        my_point_cloud.transformSelf(&tf);
+    }
     emptyPointCloud.transformSelf(&tf);
 
     new_data_received = true;
@@ -300,8 +313,7 @@ void GPUVoxelsROS::MoveMap(const Vector3f mapDisplacement){
 
 void GPUVoxelsROS::Run(){
     // visualize new pointcloud if there is new data
-    if (new_data_received)
-    {
+    if (new_data_received){
         new_data_received = false;
 
         std::unique_lock<std::mutex> lock(mapAccessMutex, std::defer_lock);
@@ -314,8 +326,10 @@ void GPUVoxelsROS::Run(){
         //			erodeTempVoxmap1->clearMap();
         erodeTempVoxmap2->clearMap();
 
-        erodeTempVoxmap1->insertSensorData(emptyPointCloud, sensorPosition, true, true, eBVM_OCCUPIED, Probability(-paramProbMiss*127), rob_map->getDeviceDataPtr());
-        erodeTempVoxmap1->insertSensorData(my_point_cloud,  sensorPosition, true, true, eBVM_OCCUPIED, Probability(paramProbHit*127), rob_map->getDeviceDataPtr());
+        erodeTempVoxmap1->insertSensorData(emptyPointCloud, sensorPosition, true, false, eBVM_OCCUPIED, Probability(-paramProbMiss*127), rob_map->getDeviceDataPtr());
+        if(my_point_cloud.getPointCloudSize() > 0){
+            erodeTempVoxmap1->insertSensorData(my_point_cloud,  sensorPosition, true, false, eBVM_OCCUPIED, Probability(paramProbHit*127), rob_map->getDeviceDataPtr());
+        }
 
         if (paramErodeThreshold > 0){
             erodeTempVoxmap1->erodeInto(*erodeTempVoxmap2, paramErodeThreshold);

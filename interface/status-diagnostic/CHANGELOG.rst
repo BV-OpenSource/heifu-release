@@ -2,6 +2,12 @@
 Changelog for package status_diagnostic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.3 (2021-11-02)
+------------------
+* 0.8.2
+* Updated changelogs.
+* Contributors: André Filipe
+
 0.8.2 (2021-08-25)
 ------------------
 
