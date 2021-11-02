@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>control_bringup</name>
-  <version>0.8.2</version>
+  <version>0.8.3</version>
   <description>Bringup of control packages</description>
 
   <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>

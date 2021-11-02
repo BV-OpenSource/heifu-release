@@ -1,0 +1,15 @@
+paramHFOV:                2.4115
+paramVFOV:                0.416
+paramWidth:               900
+paramHeight:              16
+paramProbHit:             0.70
+paramProbMiss:            0.30
+paramMaxRange:            100.0
+paramOccupancy:           0.5
+paramVoxelSize:           0.50
+paramForceRaycast:        true
+paramErodeThreshold:      0.0
+paramDensityThreshold:    1
+paramPointCloudTopic:     /velodyne_points
+paramCloudTargetFrame:    /odom
+paramCloudSourceFrame:    /velodyne
