@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>planner</name>
-  <version>0.8.2</version>
+  <version>0.8.3</version>
   <description>The Planner package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
