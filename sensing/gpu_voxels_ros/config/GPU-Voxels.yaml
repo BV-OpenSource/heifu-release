@@ -1,0 +1,15 @@
+argHFOV:                1.045
+argVFOV:                0.815
+argWidth:               640
+argHeight:              480
+argProbHit:             0.50
+argProbMiss:            0.30
+argMaxRange:            10.0
+argOccupancy:           0.5
+argVoxelSize:           0.50
+argForceRaycast:        true
+argErodeThreshold:      0.2
+argDensityThreshold:    20
+argPointCloudTopic:     /pointcloud/depth/color/points
+argCloudTargetFrame:    /odom
+argCloudSourceFrame:    /camera_link
