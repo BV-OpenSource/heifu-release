@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Input arguments -->
-    <arg name="argID"               default="0"/>
-    <arg name="argVehicle"          default="heifu"/>
-    <arg name="argNamespace"        default="$(arg argVehicle)$(arg argID)"/>
-    <arg name="argNodeRate"         default="100.0"/>
-    <arg name="argSafetyDistance"   default="2.0"/>
-    <arg name="argNodeletManager"   default="GPUVoxelsROS_manager_nodelet"/>
+    <arg name="argID"                   default="0"/>
+    <arg name="argVehicle"              default="heifu"/>
+    <arg name="argNamespace"            default="$(arg argVehicle)$(arg argID)"/>
+    <arg name="argNodeRate"             default="100.0"/>
+    <arg name="argMinSafetyDistance"    default="2.0"/>
+    <arg name="argMaxSafetyDistance"    default="4.0"/>
+    <arg name="argMaxVisionDistance"    default="20.0"/>
+    <arg name="argNodeletManager"       default="GPUVoxelsROS_manager_nodelet"/>
 <!--        <arg name="argNodeletManager"   default=""/>-->
     <arg name="argNodeletManagerHelper" default="$(eval 'CollisionAvoidance_manager_nodelet' if (argNodeletManager == '') else argNodeletManager)"/>
 
@@ -15,7 +17,9 @@
     </group>
 
     <node pkg="nodelet" type="nodelet" name="collision_avoidance_nodelet" args="load CollisionAvoidanceNodelet $(arg argNodeletManagerHelper)" ns="$(arg argNamespace)" output="screen">
-        <param name="paramNodeRate"         type="double" value="$(arg argNodeRate)"		/>
-        <param name="paramSafetyDistance"	type="double" value="$(arg argSafetyDistance)"	/>
+        <param name="paramNodeRate"             type="double" value="$(arg argNodeRate)"		/>
+        <param name="paramMinSafetyDistance"    type="double" value="$(arg argMinSafetyDistance)"/>
+        <param name="paramMaxSafetyDistance"    type="double" value="$(arg argMaxSafetyDistance)"/>
+        <param name="paramMaxVisionDistance"    type="double" value="$(arg argMaxVisionDistance)"/>
     </node>
 </launch>
