@@ -1,3 +1,42 @@
+## heifu (melodic) - 0.8.3-1
+
+The packages in the `heifu` repository were released into the `melodic` distro by running `/usr/local/bin/bloom-release --rosdistro melodic --track melodic heifu` on `Tue, 02 Nov 2021 17:06:04 -0000`
+
+These packages were released:
+- `collision_avoidance`
+- `control_bringup`
+- `gcs_interface`
+- `gimbal`
+- `gnss_utils`
+- `gpu_voxels_ros`
+- `gstreamer`
+- `heifu`
+- `heifu-bringup`
+- `heifu-gpu`
+- `planner`
+- `planners_manager`
+- `rrt`
+- `status_diagnostic`
+- `uav_msgs`
+- `waypoints_manager`
+
+Version of package(s) in repository `heifu`:
+
+- upstream repository: https://gitlab.pdmfc.com/drones/ros1/heifu-uav/heifu.git
+- release repository: https://github.com/BV-OpenSource/heifu-release.git
+- rosdistro version: `0.7.7-2`
+- old version: `0.8.2-1`
+- new version: `0.8.3-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## heifu (melodic) - 0.8.2-1
 
 The packages in the `heifu` repository were released into the `melodic` distro by running `/usr/local/bin/bloom-release --rosdistro melodic --track melodic heifu` on `Wed, 25 Aug 2021 14:41:02 -0000`
