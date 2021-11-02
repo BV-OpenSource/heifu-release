@@ -6,7 +6,7 @@
     <arg name="argID"           default="0"/>
     <arg name="argVehicle"      default="heifu"/>
     <arg name="argNamespace"    default="$(arg argVehicle)$(arg argID)"/>
-    <arg name="argEndpoint"     default="preprod"/>
+    <arg name="argEndpoint"     default="newpreprod"/>
     <arg name="argCamType"      default="default"/>
     <arg name="argEnableNFZ"    default="true"/>
     <arg name="argJetson"       default="false"/>
@@ -17,6 +17,7 @@
     <arg name="argNeedsEnableNFZ"   default=" --nfz" if="$(eval arg('argEnableNFZ'))"/>
     <arg name="argExtraArgs" default="$(arg argIsJetson)$(arg argNeedsEnableNFZ)"/>
 
+    <!-- for multiple drones/interfaces add the arg -co $(arg argNamespace) -->
     <node name="gcs_interface_node" type="interface.py" pkg="gcs_interface" output="screen" args="-n $(arg argNamespace) -e $(arg argEndpoint) -c $(arg argCamType) $(arg argExtraArgs)" respawn="true" ns="$(arg argNamespace)">
     </node>
 </launch>

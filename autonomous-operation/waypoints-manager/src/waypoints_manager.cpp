@@ -187,14 +187,31 @@ void Waypoints_Manager::pubWaypoint(const mavros_msgs::Waypoint::_frame_type fra
             pubPoseCommandLLA.publish(msg);
             break;
         case FRAME_LOCAL_ENU:
-            ENUPoint.type = uav_msgs::UAVWaypoint::TYPE_VELOCITY_YAW_WP;
+//            ENUPoint.type = uav_msgs::UAVWaypoint::TYPE_VELOCITY_YAW_FIRST_WP;
             ENUPoint.frame = FRAME_LOCAL_NED;
-            ENUPoint.radius = waypointRadius;
+            switch (waypointCommand) {
+                case LAND:
+                case TAKEOFF:
+                case WAYPOINT:
+                case VTOL_TAKEOFF:
+                    ENUPoint.radius = waypointRadius;
+                    ENUPoint.type = uav_msgs::UAVWaypoint::TYPE_VELOCITY_YAW_FIRST_WP;
+                    break;
+                case LOITER:
+                    ENUPoint.radius = loiterRadius;
+                    ENUPoint.type = uav_msgs::UAVWaypoint::TYPE_LOITER;
+                    break;
+                default:
+                    ROS_WARN_STREAM("WaypointCommand not recognized " << waypointCommand);
+                    return;
+            }
+//            ENUPoint.radius = waypointRadius;
             ENUPoint.x = static_cast<float>(x);
             ENUPoint.y = static_cast<float>(y);
             ENUPoint.z = static_cast<float>(z);
             ENUPoint.maxLinearVel = missionVelocity;
             ENUPoint.yawError = 0.27f;
+            ENUPoint.maxAngularVel = 1.0472f; // 60 deg/s
             pubGoalENUPoint.publish(ENUPoint);
             break;
         default:
@@ -221,32 +238,8 @@ void Waypoints_Manager::cbConvertedCoordinates(const geometry_msgs::PointStamped
         pubPlannersSetpoint.publish(convertedPoint);
         //        pubPlannersStart.publish(empty);
     }
-    uav_msgs::UAVWaypoint convertedPoint;
 
-    convertedPoint.maxLinearVel = missionVelocity;
-    convertedPoint.x = static_cast<float>(msg->point.x);
-    convertedPoint.y = static_cast<float>(msg->point.y);
-    convertedPoint.z = static_cast<float>(msg->point.z);
-    convertedPoint.frame = FRAME_LOCAL_NED;
-    convertedPoint.yawError = 0.27f;
-
-    switch (waypointCommand) {
-        case LAND:
-        case TAKEOFF:
-        case WAYPOINT:
-        case VTOL_TAKEOFF:
-            convertedPoint.radius = waypointRadius;
-            convertedPoint.type = uav_msgs::UAVWaypoint::TYPE_VELOCITY_YAW_WP;
-            break;
-        case LOITER:
-            convertedPoint.radius = loiterRadius;
-            convertedPoint.type = uav_msgs::UAVWaypoint::TYPE_LOITER;
-            break;
-        default:
-            ROS_WARN_STREAM("WaypointCommand not recognized " << waypointCommand);
-            return;
-    }
-    pubGoalENUPoint.publish(convertedPoint);
+    pubWaypoint(FRAME_LOCAL_ENU, msg->point.x, msg->point.y, msg->point.z);
 }
 
 void Waypoints_Manager::cbPlannersStart(const std_msgs::Empty){
