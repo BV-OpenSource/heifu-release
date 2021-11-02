@@ -39,8 +39,9 @@ import nfz
 import mission
 import actuators
 import sensors
+import gstreamer
 import utils
-
+import time
 logger = log.UAVLogger(path.basename(__file__), writeFile=True)
 # if (len(sys.argv)>1):
 #    ROSNAME = sys.argv[1]
@@ -68,6 +69,7 @@ UAV_DEBUG = logger.debug
 
 class UAV:
     def __init__(self, vehicle, socket, enableNFZ, isSimulation):
+        self.isInited = False
         self.socket = socket
         self.socket.ros_interface = self
         self.vehicle = vehicle
@@ -78,30 +80,34 @@ class UAV:
         self.uav_position = GlobalPosition()
         self.simulation = isSimulation
 
-        self._takeoff = commands.Takeoff(self)
-        self._land = commands.Land(self)
-        self._arm = commands.Arm(self)
-        self._pose = state.Pose(self)
-        self._velocity = state.Velocity(self)
-        self._gps = state.GPS(self)
-        self._nfz = nfz.NFZ(self)
-        self._state = state.State(self)
-        self._magreport = report.MagReport(self)
-        self._battery = state.Battery(self)
-        self._command = commands.Command(self)
-        self._mission = mission.Mission(self)
-        self._rtl = commands.RTL(self)
-        self._setpoint = mission.Setpoint(self)
-        self._statusreport = report.StatusReport(self)
-        self._gimbal   = actuators.Gimbal(self)
+        self._takeoff       = commands.Takeoff(self)
+        self._land          = commands.Land(self)
+        self._arm           = commands.Arm(self)
+        self._pose          = state.Pose(self)
+        self._velocity      = state.Velocity(self)
+        self._gps           = state.GPS(self)
+        self._nfz           = nfz.NFZ(self)
+        self._state         = state.State(self)
+        self._magreport     = report.MagReport(self)
+        self._battery       = state.Battery(self)
+        self._command       = commands.Command(self)
+        self._mission       = mission.Mission(self)
+        self._rtl           = commands.RTL(self)
+        self._setpoint      = mission.Setpoint(self)
+        self._statusreport  = report.StatusReport(self)
+        self._gimbal        = actuators.Gimbal(self)
+        self._gst           = gstreamer.GSTreamer(self)
+        self._file          = utils.File(self)
         # self._rfid     = sensors.RFID(self)
-        self._file = utils.File(self)
 
         self.Subscribers()
         self.Publishers()
         self.Services()
+        #time.sleep(5) # Sleep for 5 seconds
 
         rospy.init_node('interface', anonymous=True)
+        self.isInited = True
+
 
     # Subscribers
     def Subscribers(self):
@@ -226,6 +232,22 @@ class UAV:
         # Gimbal
         self.pubGimbal = rospy.Publisher(
             'gimbal/setAxes', setGimbalAxes, queue_size=10)
+
+        # Cameras - Gstreamer
+         #stream to an online platform
+        self.pubStartTStream = rospy.Publisher(
+            'gstreamer/online/start', std_msgs.msg.Empty, queue_size=10)
+        self.pubStopTStream = rospy.Publisher(
+            'gstreamer/online/stop', std_msgs.msg.Empty, queue_size=10)
+        # store to file
+        self.pubStartRecording = rospy.Publisher(
+            'gstreamer/recording/start', std_msgs.msg.Empty, queue_size=10)
+        self.pubStopRecording = rospy.Publisher(
+            'gstreamer/recording/stop', std_msgs.msg.Empty, queue_size=10)
+        # take photo
+        self.pubTakePhoto = rospy.Publisher(
+            'gstreamer/photo', std_msgs.msg.Empty, queue_size=10)
+
 
         # Publishers
         #####self.pubWarning = rospy.Publisher('warning', std_msgs.msg.String, queue_size=10)

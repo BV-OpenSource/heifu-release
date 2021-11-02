@@ -7,33 +7,38 @@
     <arg name="argVehicle"          default="heifu"/>
     <arg name="argNamespace"        default="$(arg argVehicle)$(arg argID)"/>
 
+    <arg name="argSimulation"       default="false"/>
+
     <arg name="argPlannerType"      default="1"/>
 
-    <arg name="argGoalTolerance"    default="2.0"/>
-    <arg name="argSafetyDistance"   default="2.0"/>
+    <arg name="argGoalTolerance"        default="2.0"/>
+    <arg name="argMinSafetyDistance"    default="2.0"/>
+    <arg name="argMaxSafetyDistance"    default="4.0"/>
+    <arg name="argMaxVisionDistance"    default="20.0"/>
 
     <arg name="argNodeletManager"   default="GPUVoxelsROS_manager_nodelet"/>
 
     <!-- Launch Collision Avoidance node -->
     <include file="$(find collision_avoidance)/launch/CollisionAvoidance_nodelets.launch">
-        <arg name="argNamespace"        value="$(arg argNamespace)"/>
-        <arg name="argSafetyDistance"   value="$(arg argSafetyDistance)"/>
-        <arg name="argNodeletManager"   value="$(arg argNodeletManager)"/>
+        <arg name="argNamespace"            value="$(arg argNamespace)"/>
+        <arg name="argNodeletManager"       value="$(arg argNodeletManager)"/>
+        <arg name="argMinSafetyDistance"    value="$(arg argMinSafetyDistance)"/>
+        <arg name="argMaxSafetyDistance"    value="$(arg argMaxSafetyDistance)"/>
+        <arg name="argMaxVisionDistance"    value="$(arg argMaxVisionDistance)"/>
     </include>
 
     <!-- Launch Planners node -->
-    <include file="$(find planners_manager)/launch/Planners_Manager_nodelets.launch">
+<!--    <include file="$(find planners_manager)/launch/Planners_Manager_nodelets.launch">
         <arg name="argNamespace"        value="$(arg argNamespace)"/>
         <arg name="argPlannerType"      value="$(arg argPlannerType)"/>
         <arg name="argGoalTolerance"    value="$(arg argGoalTolerance)"/>
         <arg name="argNodeletManager"   value="$(arg argNodeletManager)"/>
-    </include>
+    </include>-->
 
     <!-- Launch Navigation controller-->
-    <include file="$(find gpu_voxels_ros)/launch/GPUVoxelROS_nodelets.launch">
-        <rosparam file="$(find gpu_voxel_ros)/config/GPU-Voxels.yaml"/>
-
+    <include file="$(find gpu_voxels_ros)/launch/GPUVoxelROS_nodelets.launch" >
         <arg name="argNodeletManager"       value=""/>
+        <arg name="argSimulation"           value="$(arg argSimulation)"/>
     </include>
 
 </launch>
