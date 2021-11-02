@@ -1,0 +1,19 @@
+[submodule "mavros"]
+	path = mavros
+	url = git@gitlab.pdmfc.com:drones/ros1/control/mavros.git
+    branch = mavlinkUpdate
+
+[submodule "mavros-commands"]
+	path = mavros-commands
+	url = git@gitlab.pdmfc.com:drones/ros1/control/mavros-commands.git
+    branch = master
+
+[submodule "priority-manager"]
+	path = priority-manager
+	url = git@gitlab.pdmfc.com:drones/ros1/control/priority-manager.git
+    branch = master
+
+[submodule "navigation-controller"]
+	path = navigation-controller
+	url = git@gitlab.pdmfc.com:drones/ros1/control/navigation-controller.git
+    branch = master
