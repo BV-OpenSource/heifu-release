@@ -31,15 +31,6 @@ class CollisionAvoidance
 
         void Run();
 
-        void cbMavrosPose(const geometry_msgs::PoseStamped &msg);
-        void cbMavrosVel(const geometry_msgs::TwistStamped &msg);
-        void cbSetpointPos(const uav_msgs::UAVWaypoint &msg);
-        void cbGetMapPtr(const std_msgs::UInt64 &msg);
-        void cbMapOffset(const geometry_msgs::PointStampedPtr msg);
-
-        Vector3ui convertPoint(const geometry_msgs::Point point);
-
-        void cbGetMutexPtr(const std_msgs::UInt64 &msg);
     private:
         ros::NodeHandle nh;
         ros::NodeHandle shm_nh;
@@ -50,19 +41,25 @@ class CollisionAvoidance
         ros::Subscriber subMapOffset;
         ros::Subscriber subMavrosVel;
         ros::Subscriber subMavrosPose;
+        ros::Subscriber subMavrosState;
         ros::Subscriber subSetpointPos;
         ros::Subscriber subPlannersSetpoint;
+
+        ros::Subscriber subDebugCollision;
 
         // Publishers
         ros::Publisher pubPause;
         ros::Publisher pubStart;
         ros::Publisher pubUpdateDistance;
-        ros::Publisher pubSetpointVel;
+        ros::Publisher pubCollisionDetected;
+        ros::Publisher pubBrakeMode;
         ros::Publisher pubMarker;
 
         // Parameters
         double paramNodeRate;
-        double paramSafetyDistance;
+        double paramMinSafetyDistance;
+        double paramMaxSafetyDistance;
+        double paramMaxVisionDistance;
 
         // Variables
         geometry_msgs::PoseStamped robotPosition;
@@ -78,8 +75,11 @@ class CollisionAvoidance
         std::string State;
         std::string ns;
 
+        std::vector<double> safetyRadius, sphereDistance;
+
         // Debug
         std::vector<visualization_msgs::Marker> vect;
+        visualization_msgs::Marker obj;
 
         gpu_voxels::DistanceVoxel* DistanceVoxmap = nullptr;
         gpu_voxels::voxelmap::DistanceVoxelMap *pbaDistanceVoxmap;
@@ -87,10 +87,21 @@ class CollisionAvoidance
         gpu_voxels::Vector3ui mapDimensions;
 
         Vector3f center;
+        Vector3ui convertPoint(const geometry_msgs::Point point);
 
         bool goalReceived;
 
         std::mutex *mapAccessMutex;
+
+        void cbGetMapPtr(const std_msgs::UInt64 &msg);
+        void cbMavrosState(const mavros_msgs::State &msg);
+        void cbSetpointPos(const uav_msgs::UAVWaypoint &msg);
+        void cbMavrosPose(const geometry_msgs::PoseStamped &msg);
+        void cbMavrosVel(const geometry_msgs::TwistStamped &msg);
+        void cbMapOffset(const geometry_msgs::PointStampedPtr msg);
+        void cbGetMutexPtr(const std_msgs::UInt64 &msg);
+
+        void cbSendStopCommand(const std_msgs::Empty);
 };
 
 #endif // COLLISIONAVOIDANCE_HPP

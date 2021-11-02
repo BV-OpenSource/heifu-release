@@ -1,0 +1,4 @@
+[submodule "gstreamer"]
+	path = gstreamer
+	url = git@gitlab.pdmfc.com:drones/ros1/cameras/gstreamer.git
+	branch = eh640

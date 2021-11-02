@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>uav_msgs</name>
-  <version>0.8.2</version>
+  <version>0.8.3</version>
   <description>UAV messages package</description>
   <author email="rmendes@beyond-vision.pt">Rui Mendes</author>
   <maintainer email="fabio.azevedo@beyond-vision.pt">Fábio Azevedo</maintainer>
