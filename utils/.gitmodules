@@ -1,0 +1,3 @@
+[submodule "gnss-utils"]
+	path = gnss-utils
+	url = git@gitlab.pdmfc.com:drones/ros1/utils/gnss-utils.git
