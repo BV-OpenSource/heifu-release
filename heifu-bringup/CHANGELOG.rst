@@ -2,6 +2,9 @@
 Changelog for package heifu-bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.3 (2021-11-02)
+------------------
+
 0.8.2 (2021-08-25)
 ------------------
 * Add Launch arguments. Change to argparse.

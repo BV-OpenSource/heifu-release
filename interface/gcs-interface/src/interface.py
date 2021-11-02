@@ -6,17 +6,13 @@ from Crypto.Cipher import AES
 import hashlib
 import requests
 import socketio
-import time
-import subprocess
 import argparse
+import time
 
 import sys
 from os import path
 from config import configs
 
-# module_name = 'heifu_interface'
-# ros_interface = __import__(module_name)
-#import heifu_interface
 uav_interface = __import__(configs.MODULE_NAME)
 
 print("ARGS", sys.argv)
@@ -25,7 +21,8 @@ print("ARGS", sys.argv)
 parser = argparse.ArgumentParser(description='Arguments for GCS interface.')
 parser.add_argument("-n", "--name",     type=str,   default='heifu0',            help='Namespace')
 parser.add_argument("-e", "--endpoint", type=str,   default='preprod',           help='Endpoint')
-parser.add_argument("-c", "--camtype",  type=str,   default='default',           help='Endpoint')
+parser.add_argument("-c", "--camtype",  type=str,   default='default',           help='Camera type')
+parser.add_argument("-co", "--configname",  type=str,   default='config',           help='Config name')
 parser.add_argument(      "--jetson",   action="store_true", help='Working on Jetson.')
 parser.add_argument(      "--nfz",      action="store_true", help='Enable No-Fly Zones.')
 parser.add_argument("-v", "--version",  help="show program version",             action="store_true")
@@ -36,7 +33,7 @@ if args.version:
     exit()
 
 ROSNAME = args.name
-configname = '-' + ROSNAME
+configname = args.configname + '.bext'
 configs.URL = configs.BACKEND_LIST[args.endpoint] + configs.API_VERSION
 configs.URL_WS = configs.BACKEND_LIST[args.endpoint] + configs.API_VERSION
 configs.JANUS_IP = configs.JANUS_LIST[args.endpoint]
@@ -68,7 +65,6 @@ class SIO:
         self.sio.on(ID + '/frontend/setpoint', self.onSetpoint)
         self.sio.on(ID + '/logrequest', self.logRequest)
         self.sio.on(ID + '/frontend/sendTriggerSensor', self.sendTriggerRISESensor)
-        self.stream_process =  None;
 
     def emit(self, topic, msg):
         endpoint = self.ID + topic
@@ -76,91 +72,31 @@ class SIO:
 
     # defines on connect event and prints if connection is established
     def connect(self):
-        print('connection established')
+        print('Connection established')
 
     # defines on disconnect event and prints if connection is lost
     def disconnect(self):
-        if self.stream_process is not None:
-            self.stream_process.terminate()
-            self.stream_process.wait()
-
+        self.ros_interface._gst.onStopTStream()
         print('Disconnected from server.')
 
     def onStream(self, msg):
         print('Port received:', msg)
 
-        startStream = self.selectStream(msg)
-        self.stream_process = subprocess.Popen(['bash', '-c', startStream], shell=False)  # Run the process to video recorder
+        # Sometimes the init_node takes longer then the server to answer with the port
+        # making it impossible to send the result in the respective topics
+        # for this reason we have to wait for the ros_interface to be ready
+        while not self.ros_interface.isInited:
+            time.sleep(1) # sleep 1 sec
+
+        # TODO - Do not start stream right away... The RC Controller should push a start stream button
+        self.ros_interface._gst.onPortReceived(msg)
+        self.ros_interface._gst.onStartTStream(msg)
         self.emit('/portACK', '')
-    
-    ###################################################   Stream 
-    def selectStream(self, msg):
 
-        ####### Legion Camera for testing is the default
-        stream_cmd = "gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-raw,framerate=30/1,width=640,height=480 ! videoconvert ! x264enc quantizer=25 \
-            tune=zerolatency bitrate=4096 ! \"video/x-h264,profile=baseline\"  ! rtph264pay ! multiudpsink clients=127.0.0.1:" + str(
-            msg) + ',' + configs.JANUS_IP + ':' + \
-            str(msg) + " sync=false async=false"
-
-        if configs.STABILIZE:
-            if configs.JETSON:
-                stab_string = "stabilization_jetson"
-            else:
-                stab_string = "stabilization_pc"
-            if path.exists("./" + stab_string) == False:
-                print("Stabilization executable not found, disabling.")
-                configs.STABILIZE = False
-        if configs.STABILIZE:
-            record_str = ' -r' if record else ''
-            stream_cmd = "./" + stab_string + " -p " + str(msg) + " -d 0 -a " + str(configs.JANUS_IP) + " -w 640 -e 480 -f 30 -c laptop" + record_str
-            if configs.JETSON:
-                switcher = {
-                    "realsense": "./" + stab_string + " -p " + str(msg) + " -d " + str(configs.DEV_ID) + " -a " + str(configs.JANUS_IP) + " -w 1280 -e 720 -f 30 -c realsense -j" + record_str,
-                    "raspy": "./" + stab_string + " -p " + str(msg) + " -d " + str(configs.DEV_ID) + " -a " + str(configs.JANUS_IP) + " -w 1920 -e 1080 -f 30 -c raspy -j" + record_str,
-                }
-            else:
-                switcher = {
-                    "realsense": "./" + stab_string + " -p " + str(msg) + " -d " + str(configs.DEV_ID) + " -a " + str(configs.JANUS_IP) + " -w 1280 -e 720 -f 30 -c realsense" + record_str,
-                }
-        else:
-            ####### Legion Camera for testing is the default
-            stream_cmd = "gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-raw,framerate=10/1,width=1280,height=720 ! videoconvert ! x264enc quantizer=25 \
-                tune=zerolatency bitrate=4096 ! \"video/x-h264,profile=baseline\"  ! rtph264pay mtu=1300 ! multiudpsink clients=127.0.0.1:" + str(
-                msg) + ',' + configs.JANUS_IP + ':' + \
-                        str(msg) + " sync=false async=false"
-            if configs.JETSON:
-                switcher = {
-                    "realsense": "gst-launch-1.0 -v v4l2src device=/dev/video" + str(configs.DEV_ID) + " ! 'video/x-raw,format=(string)YUY2, width=1280, height=720, framerate=30/1' ! nvvidconv !  \
-                    nvv4l2h264enc control-rate=0 insert-sps-pps=1 bitrate=2048000 profile=0 ! rtph264pay mtu=1300 ! multiudpsink \
-                    clients=" + configs.JANUS_IP + ':' + str(msg) + ", sync=false async=false",
-                    "raspy": "gst-launch-1.0 -e nvarguscamerasrc ! 'video/x-raw(memory:NVMM), width=1920, height=1080, framerate=30/1' ! nvvidconv flip-method=2 ! \
-                    nvv4l2h264enc bitrate=8000000 insert-sps-pps=true ! rtph264pay mtu=1300 ! multiudpsink clients=" + configs.JANUS_IP + ':' + str(
-                        msg) + \
-                            " sync=false async=false",
-                    "insta360": "gst-launch-1.0 -v rtspsrc location=rtsp://" + str(configs.INSTA360_IP) + "/live/live latency=0 ! multiudpsink \
-                    clients=" + configs.JANUS_IP + ':' + str(msg) + " sync=false ",
-                }
-            else:
-                switcher = {
-                    "realsense": "gst-launch-1.0 -v v4l2src device=/dev/video" + str(configs.DEV_ID) + " ! 'video/x-raw,format=(string)YUY2, width=1280, height=720, framerate=30/1' ! videoconvert !  \
-                    x264enc pass=qual quantizer=28 bitrate=8192 tune=zerolatency  ! \"video/x-h264,profile=baseline\" ! rtph264pay mtu=1300 ! multiudpsink \
-                    clients=" + configs.JANUS_IP + ':' + str(msg) + ", sync=false async=false",
-                    "insta360": "gst-launch-1.0 -v rtspsrc location=rtsp://" + str(configs.INSTA360_IP) + "/live/live latency=0 ! multiudpsink \
-                    clients=" + configs.JANUS_IP + ':' + str(msg) + " sync=false ",
-                    "gazebo": "gst-launch-1.0 -v v4l2src device=/dev/video9 ! video/x-raw,framerate=30/1,width=640,height=480 ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency bitrate=8192 \
-                        ! \"video/x-h264,profile=baseline\" ! rtph264pay mtu=1300 ! multiudpsink clients=127.0.0.1:5000," + configs.JANUS_IP + ":" + str(msg) + " sync=false async=false",
-                    "gazebo_integrated": "gst-launch-1.0  -v udpsrc port=5700 \
-                                         ! multiudpsink clients=127.0.0.1:5000," + configs.JANUS_IP + ":" + str(msg) + " sync=false"
-                }
-        # Remove uppercase and spaces        
-        cam_type = configs.CAM_TYPE.replace(' ', '').lower()
-        return switcher.get(cam_type, stream_cmd)
 
     def stopStream(self, msg):
-        if self.stream_process is not None:
-            print('Janus went down')
-            self.stream_process.terminate()
-            self.stream_process.wait()
+        self.ros_interface._gst.onStopTStream()
+        print('Janus went down')
 
     def onShutdown(self, msg):
         self.sio.disconnect()
@@ -207,6 +143,21 @@ class SIO:
     def onRlt(self, msg):
         self.ros_interface._rtl.onRlt(msg)
 
+    def onStartTStream(self, msg):
+        self.ros_interface._gst.onStartTStream(msg)
+
+    def onStopTStream(self, msg):
+        self.ros_interface._gst.onStopTStream(msg)
+
+    def onStartRecording(self, msg):
+        self.ros_interface._gst.onStartRecording(msg)
+
+    def onStopRecording(self, msg):
+        self.ros_interface._gst.onStopRecording(msg)
+
+    def onTakePhoto(self, msg):
+        self.ros_interface._gst.onTakePhoto(msg)
+
     def onSetpoint(self, msg):
         self.ros_interface._setpoint.onSetpoint(msg)
 
@@ -246,12 +197,14 @@ class vehicleInterface:
     def getConfig(self):
         try:
             home_dir = path.expanduser("~")
-            dir = path.abspath(path.join(home_dir, 'config' + configname))
-            file = open(dir, "r")
+            config_file_path = path.abspath(path.join(home_dir, configname))
+            print(config_file_path)
+            file = open(config_file_path, "r")
             line = file.readline().rstrip()
             namespace = self.decrypt(line)
         except:
             print('File not found')
+            time.sleep(5) # Sleep for 5 seconds
             return -1
         return namespace
 
